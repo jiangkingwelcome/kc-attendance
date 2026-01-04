@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtHolidayMapper">
+
+    <resultMap type="DtHoliday" id="DtHolidayResult">
+        <result property="id"    column="id"    />
+        <result property="holiday"    column="holiday"    />
+        <result property="weekDay"    column="week_day"    />
+        <result property="cn"    column="cn"    />
+        <result property="holidayRemark"    column="holiday_remark"    />
+        <result property="en"    column="en"    />
+        <result property="curDay"    column="cur_day"    />
+        <result property="dayType"    column="day_type"    />
+        <result property="endDay"    column="end_day"    />
+        <result property="beginDay"    column="begin_day"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="delFlag"    column="del_flag"    />
+    </resultMap>
+
+    <sql id="selectDtHolidayVo">
+        select id, holiday, week_day, cn, holiday_remark, en, cur_day, day_type, end_day, begin_day, create_by, create_time, update_by, update_time, del_flag from dt_holiday
+    </sql>
+
+    <select id="selectDtHolidayList" parameterType="DtHoliday" resultMap="DtHolidayResult">
+        <include refid="selectDtHolidayVo"/>
+        <where>
+            <if test="holiday != null  and holiday != ''"> and holiday = #{holiday}</if>
+            <if test="weekDay != null  and weekDay != ''"> and week_day = #{weekDay}</if>
+            <if test="cn != null  and cn != ''"> and cn = #{cn}</if>
+            <if test="holidayRemark != null  and holidayRemark != ''"> and holiday_remark = #{holidayRemark}</if>
+            <if test="en != null  and en != ''"> and en = #{en}</if>
+            <if test="curDay != null  and curDay != ''"> and cur_day = #{curDay}</if>
+            <if test="dayType != null  and dayType != ''"> and day_type = #{dayType}</if>
+            <if test="endDay != null  and endDay != ''"> and end_day = #{endDay}</if>
+            <if test="beginDay != null  and beginDay != ''"> and begin_day = #{beginDay}</if>
+        </where>
+    </select>
+
+    <select id="selectDtHolidayById" parameterType="Long" resultMap="DtHolidayResult">
+        <include refid="selectDtHolidayVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDtHoliday" parameterType="DtHoliday" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_holiday
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="holiday != null">holiday,</if>
+            <if test="weekDay != null">week_day,</if>
+            <if test="cn != null">cn,</if>
+            <if test="holidayRemark != null">holiday_remark,</if>
+            <if test="en != null">en,</if>
+            <if test="curDay != null">cur_day,</if>
+            <if test="dayType != null">day_type,</if>
+            <if test="endDay != null">end_day,</if>
+            <if test="beginDay != null">begin_day,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="delFlag != null and delFlag != ''">del_flag,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="holiday != null">#{holiday},</if>
+            <if test="weekDay != null">#{weekDay},</if>
+            <if test="cn != null">#{cn},</if>
+            <if test="holidayRemark != null">#{holidayRemark},</if>
+            <if test="en != null">#{en},</if>
+            <if test="curDay != null">#{curDay},</if>
+            <if test="dayType != null">#{dayType},</if>
+            <if test="endDay != null">#{endDay},</if>
+            <if test="beginDay != null">#{beginDay},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="delFlag != null and delFlag != ''">#{delFlag},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDtHoliday" parameterType="DtHoliday">
+        update dt_holiday
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="holiday != null">holiday = #{holiday},</if>
+            <if test="weekDay != null">week_day = #{weekDay},</if>
+            <if test="cn != null">cn = #{cn},</if>
+            <if test="holidayRemark != null">holiday_remark = #{holidayRemark},</if>
+            <if test="en != null">en = #{en},</if>
+            <if test="curDay != null">cur_day = #{curDay},</if>
+            <if test="dayType != null">day_type = #{dayType},</if>
+            <if test="endDay != null">end_day = #{endDay},</if>
+            <if test="beginDay != null">begin_day = #{beginDay},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="delFlag != null and delFlag != ''">del_flag = #{delFlag},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDtHolidayById" parameterType="Long">
+        delete from dt_holiday where id = #{id}
+    </delete>
+
+    <delete id="deleteDtHolidayByIds" parameterType="String">
+        delete from dt_holiday where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_holiday  (holiday,week_day,cn,holiday_remark,en,cur_day,day_type,end_day,begin_day,create_by,create_time,del_flag)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.holiday},
+                #{item.weekDay},
+                #{item.cn},
+                #{item.holidayRemark},
+                #{item.en},
+                #{item.curDay},
+                #{item.dayType},
+                #{item.endDay},
+                #{item.beginDay},
+                #{item.createBy},
+                sysdate(),
+                #{item.delFlag}
+            )
+        </foreach>
+        on  duplicate key update
+        holiday = values(holiday),
+        week_day = values(week_day),
+        cn = values(cn),
+        holiday_remark = values(holiday_remark),
+        en = values(en),
+        day_type = values(day_type),
+        end_day = values(end_day),
+        begin_day = values(begin_day),
+        update_by = '1',
+        update_time = sysdate(),
+        del_flag = values(del_flag)
+    </insert>
+</mapper>

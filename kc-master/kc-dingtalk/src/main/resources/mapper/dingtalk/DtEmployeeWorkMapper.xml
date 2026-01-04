@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtEmployeeWorkMapper">
+
+    <select id="selectEmployeeWorkStat" resultType="com.kc.common.core.domain.entity.DtEmployeeWork" parameterType="com.kc.common.core.domain.dao.EmployeeWorkDao">
+        SELECT
+        a.NAME,
+        a.job_number jobNumber,
+        a.employee_id employeeId,
+        ROUND(a.durationtotal, 2) durationtotal,
+        a.durationdays,
+        ROUND(a.durationtotal / a.durationdays, 2) avgduration,
+        a.ycounts,
+        a.ywcounts,
+        a.ywdays,
+        ROUND(IFNULL(a.durationtotal, 0) + IFNULL(a.leavehalfdayduration, 0) + IFNULL(a.overtimeduration, 0), 2) allduration,
+        IFNULL(a.ycounts, 0) - IFNULL(a.ywcounts, 0) - IFNULL(a.leaveduration, 0) +
+        IFNULL(a.overtimeapplyduration_day, 0) + ROUND(IFNULL(a.overtimeapplyduration_hour, 0) / 10, 2) scount,
+        ROUND(
+        (IFNULL(a.durationtotal, 0) + IFNULL(a.leavehalfdayduration, 0) + IFNULL(a.overtimeduration, 0)) /
+        (IFNULL(a.ycounts, 0) - IFNULL(a.ywcounts, 0) - IFNULL(a.leaveduration, 0) +
+        IFNULL(a.overtimeapplyduration_day, 0) + ROUND(IFNULL(a.overtimeapplyduration_hour, 0) / 10, 2)),
+        2
+        ) savgduration,
+        a.leavecount,
+        a.leaveduration,
+        ROUND(a.leavehalfdayduration,2) leavehalfdayduration,
+        a.overtimecount,
+        a.overtimeapplyduration_day overtimeapplydurationDay,
+        a.overtimeapplyduration_hour overtimeapplydurationHour,
+        ROUND(a.overtimeduration, 2) overtimeduration,
+        a.travelcount,
+        a.travelduration,
+        a.traveldays,
+        a.lateworkUndertime,
+        a.lateworkAbovetime,
+        a.earlyworkUndertime,
+        a.hired_date hiredDate,
+        a.last_work_day lastWorkDay,
+        a.emp_type empType
+        FROM (
+            SELECT
+            wd.job_number,
+            wd.NAME,
+            wd.employee_id,
+            e.hired_date,
+            e.last_work_day,
+            e.emp_type,
+            SUM(
+            CASE
+            WHEN h.day_type = '1' AND aa.leave_record IS NULL AND aa.overtime_type IS NULL AND
+            aa.work_time IS NULL AND aa.travel_duration IS NOT NULL THEN 10
+            WHEN h.day_type = '1' AND aa.leave_record IS NULL AND aa.overtime_type IS NULL AND
+            aa.work_time IS NOT NULL AND aa.travel_duration IS NULL THEN aa.duration
+            WHEN h.day_type = '1' AND aa.leave_record IS NULL AND aa.overtime_type IS NULL AND
+            aa.work_time IS NULL AND aa.travel_duration IS NULL THEN 0
+            WHEN h.day_type = '1' AND aa.leave_record IS NULL AND aa.overtime_type IS NULL AND
+            aa.duration >= 10 THEN aa.duration
+            WHEN h.day_type = '1' AND aa.leave_record IS NULL AND aa.overtime_type IS NULL AND
+            aa.duration <![CDATA[ < ]]> 10 AND IFNULL(aa.travel_duration, 0) >= 10 THEN 10
+            WHEN h.day_type = '1' AND aa.leave_record IS NULL AND aa.overtime_type IS NULL AND
+            aa.duration <![CDATA[ < ]]> 10 AND aa.travel_duration <![CDATA[ < ]]> 10 THEN
+            IF(ROUND(aa.duration + IFNULL(aa.travel_duration, 0), 2) > 10,
+            10,
+            ROUND(aa.duration + IFNULL(aa.travel_duration, 0), 2)
+            )
+            END
+            ) durationtotal,
+            COUNT(
+            IF(h.day_type = '1' AND aa.leave_record IS NULL AND aa.overtime_type IS NULL
+            AND wd.batch_no >= replace(e.hired_date, "-", ""), 1, NULL)
+            ) durationdays,
+            COUNT(
+            IF(h.day_type = '1' and wd.batch_no >= replace(e.hired_date, "-", ""), 1, NULL)
+            ) ycounts,
+            COUNT(
+            IF(
+            h.day_type = '1' AND aa.work_time IS NULL AND aa.leave_record IS NULL AND
+            aa.overtime_type IS NULL AND aa.travel_record IS NULL
+            and wd.batch_no >= replace(e.hired_date, "-", ""),
+            1,
+            NULL
+            )
+            ) ywcounts,
+            GROUP_CONCAT(
+            IF(
+            h.day_type = '1' AND aa.work_time IS NULL AND aa.leave_record IS NULL AND
+            aa.overtime_type IS NULL AND aa.travel_record IS NULL
+            and wd.batch_no >= replace(e.hired_date, "-", ""),
+            wd.batch_no,
+            NULL
+            )
+            ) ywdays,
+            SUM(IF(aa.leave_count is not null and aa.leave_count != '' and h.day_type = '1', leave_count, 0)) leavecount,
+            SUM(IF(aa.leave_record is not null and aa.leave_record != '' and h.day_type = '1', aa.leave_duration, 0)) leaveduration,
+            SUM(IF(h.day_type = '1' and aa.leave_duration <![CDATA[ <= ]]> 0.5,
+                CASE  WHEN aa.duration >= 10 THEN aa.duration
+                    WHEN aa.duration <![CDATA[ < ]]> 10 AND IFNULL(aa.travel_duration, 0) >= 10 THEN 10
+                    WHEN aa.duration <![CDATA[ < ]]> 10 AND IFNULL(aa.travel_duration, 0) <![CDATA[ <= ]]> 10 THEN
+                IF(ROUND(aa.duration + IFNULL(aa.travel_duration, 0), 2) > 10, 10, ROUND(aa.duration + IFNULL(aa.travel_duration, 0), 2) ) END ,
+                0
+                )
+            ) leavehalfdayduration,
+            COUNT(overtime_type) overtimecount,
+            SUM(IF(aa.overtime_type != 2, aa.overtime_duration_day, 0)) overtimeapplyduration_day,
+            SUM(IF(aa.overtime_type = 2, aa.overtime_duration_hour, 0)) overtimeapplyduration_hour,
+            SUM(
+            IF(aa.overtime_type IS NOT NULL,
+            CASE
+            WHEN aa.duration >= 10 THEN aa.duration
+            WHEN aa.duration <![CDATA[ < ]]> 10 AND IFNULL(aa.travel_duration, 0) >= 10 THEN 10
+            WHEN aa.duration <![CDATA[ < ]]> 10 AND IFNULL(aa.travel_duration, 0) <![CDATA[ < ]]> 10 THEN
+            IF(ROUND(aa.duration + IFNULL(aa.travel_duration, 0), 2) > 10,
+            10,
+            ROUND(aa.duration + IFNULL(aa.travel_duration, 0), 2)
+            )
+            END ,
+            0
+            )
+            ) overtimeduration,
+            SUM(IFNULL(aa.travel_count, 0)) travelcount,
+            ROUND(SUM(IFNULL(aa.travel_duration, 0) / 10), 2) traveldays,
+            SUM(IFNULL(aa.travel_duration, 0)) travelduration,
+
+            /*迟到工时不足*/
+            SUM(case when h.day_type = '1'  AND aa.leave_record IS NULL
+            AND aa.overtime_type IS NULL
+            AND aa.travel_record IS NULL
+            AND wd.batch_no >= REPLACE ( e.hired_date, "-", "" ) and aa.work_time > CONCAT(wd.date," 09:30:00") and aa.duration <![CDATA[ < ]]>10 then 1 else 0 end) lateworkUndertime,
+
+            /*迟到工时满足*/
+            SUM(case when h.day_type = '1'  AND aa.leave_record IS NULL
+            AND aa.overtime_type IS NULL
+            AND aa.travel_record IS NULL
+            AND wd.batch_no >= REPLACE ( e.hired_date, "-", "" ) and aa.work_time > CONCAT(wd.date," 09:30:00") and aa.duration >= 10 then 1 else 0 end) lateworkAbovetime,
+
+            /*准时到工时不足*/
+            SUM(
+                case when h.day_type = '1'  AND aa.leave_record IS NULL
+                AND aa.overtime_type IS NULL
+                AND aa.travel_record IS NULL
+                AND wd.batch_no >= REPLACE ( e.hired_date, "-", "" ) and aa.work_time <![CDATA[ <= ]]> CONCAT(wd.date," 09:30:00") and aa.work_time >= CONCAT(wd.date," 06:00:00") and aa.duration <![CDATA[ < ]]> 10 then 1 else 0 end) earlyworkUndertime
+
+            FROM (
+                SELECT
+                    batch_no,
+                    name,
+                    job_number,
+                    date,
+                    employee_id
+                FROM dt_workday
+                WHERE job_number IS NOT NULL
+                AND job_number != ''
+                <if test="params.beginBatchNo != null and params.beginBatchNo != ''
+                            and params.endBatchNo != null and params.endBatchNo != ''">
+                    AND batch_no between #{params.beginBatchNo} and #{params.endBatchNo}
+                </if>
+
+                <if test="name != null">
+                    AND name like concat('%', #{name}, '%')
+                </if>
+
+                <if test="jobNumber != null ">
+                    AND employee_id in(
+                    SELECT employee_id
+                    FROM dt_employee
+                    where job_number = #{jobNumber}
+                    GROUP by job_number
+                    )
+                </if>
+
+                AND employee_id IN (
+                    SELECT employee_id
+                    FROM dt_employee
+                    WHERE dept_id IN (
+                    SELECT s2.dept_id
+                    FROM sys_dept sys_dept
+                    LEFT JOIN sys_dept s2 ON FIND_IN_SET(sys_dept.dept_id, concat(s2.dept_id,",",s2.ancestors))
+                    <if test="deptId != null">
+                        where sys_dept.dept_id = #{deptId}
+                    </if>
+                    )
+                )
+
+                <if test="params.dataScope != null and params.dataScope != ''">
+                    <!-- 数据范围过滤 -->
+                    AND e.employee_id in(
+                    SELECT d.employee_id
+                    FROM dt_employee d
+                    LEFT JOIN sys_user_employee ue ON d.employee_id = ue.employee_id
+                    WHERE d.del_flag = '0' ${params.dataScope}
+                    )
+                </if>
+                GROUP BY job_number, batch_no
+            ) wd
+            LEFT JOIN dt_holiday h ON wd.batch_no = h.cur_day
+            LEFT JOIN dt_attendance_analyze aa ON wd.job_number = aa.job_number AND wd.batch_no = aa.batch_no
+            LEFT JOIN (
+                SELECT
+                       min(hired_date) hired_date,
+                       job_number,
+                       max(last_work_day) last_work_day,
+                       max(emp_type) emp_type
+                FROM dt_employee
+                where hired_date is not null
+                group BY job_number
+            ) e on e.job_number = wd.job_number
+            GROUP BY wd.job_number
+            ORDER BY wd.job_number desc
+        ) a
+    </select>
+
+
+</mapper>

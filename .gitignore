@@ -1,0 +1,36 @@
+# Maven 构建产物
+**/target/
+**/*.jar
+**/*.war
+**/*.ear
+
+# Node 依赖包
+node_modules/
+dist/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# 环境配置（包含敏感信息）
+.env
+.env.local
+.env.*.local
+
+# Redis 和其他本地数据
+dump.rdb
+*.db
+
+# 临时文件
+*.tmp
+*.temp

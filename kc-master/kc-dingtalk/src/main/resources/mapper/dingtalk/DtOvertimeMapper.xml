@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtOvertimeMapper">
+
+    <resultMap type="DtOvertime" id="DtOvertimeResult">
+        <result property="id" column="id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="name" column="name"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="type" column="type"/>
+        <result property="duration" column="duration"/>
+        <result property="dataId" column="data_id"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <sql id="selectDtOvertimeVo">
+        select id,
+               employee_id,
+               name,
+               batch_no,
+               type,
+               duration,
+               data_id,
+               del_flag
+        from dt_overtime
+    </sql>
+
+    <select id="selectDtOvertimeList" parameterType="DtOvertime" resultMap="DtOvertimeResult">
+        <include refid="selectDtOvertimeVo"/>
+        <where>
+            <if test="employeeId != null  and employeeId != ''">and employee_id = #{employeeId}</if>
+            <if test="name != null  and name != ''">and name like concat('%', #{name}, '%')</if>
+            <if test="batchNo != null  and batchNo != ''">and batch_no = #{batchNo}</if>
+            <if test="type != null ">and type = #{type}</if>
+            <if test="duration != null  and duration != ''">and duration = #{duration}</if>
+            <if test="dataId != null  and dataId != ''">and data_id = #{dataId}</if>
+        </where>
+    </select>
+
+    <select id="selectDtOvertimeById" parameterType="Long" resultMap="DtOvertimeResult">
+        <include refid="selectDtOvertimeVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDtOvertime" parameterType="DtOvertime" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_overtime
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id,</if>
+            <if test="name != null">name,</if>
+            <if test="batchNo != null">batch_no,</if>
+            <if test="type != null">type,</if>
+            <if test="duration != null and duration != ''">duration,</if>
+            <if test="dataId != null and dataId != ''">data_id,</if>
+            <if test="delFlag != null and delFlag != ''">del_flag,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">#{employeeId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="batchNo != null">#{batchNo},</if>
+            <if test="type != null">#{type},</if>
+            <if test="duration != null and duration != ''">#{duration},</if>
+            <if test="dataId != null and dataId != ''">#{dataId},</if>
+            <if test="delFlag != null and delFlag != ''">#{delFlag},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDtOvertime" parameterType="DtOvertime">
+        update dt_overtime
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id = #{employeeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="batchNo != null">batch_no = #{batchNo},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="duration != null and duration != ''">duration = #{duration},</if>
+            <if test="dataId != null and dataId != ''">data_id = #{dataId},</if>
+            <if test="delFlag != null and delFlag != ''">del_flag = #{delFlag},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDtOvertimeById" parameterType="Long">
+        delete
+        from dt_overtime
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteDtOvertimeByIds" parameterType="String">
+        delete from dt_overtime where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_overtime(employee_id, name, batch_no, type, duration, data_id, del_flag,company_type)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.employeeId},
+            #{item.name},
+            #{item.batchNo},
+            #{item.type},
+            #{item.duration},
+            #{item.dataId},
+            #{item.delFlag},
+            #{item.companyType}
+            )
+        </foreach>
+        on duplicate key update
+        name=values(`name`),
+        employee_id = values(employee_id),
+        batch_no = values(batch_no),
+        type = values(`type`),
+        del_flag = values(del_flag),
+        company_type = values(company_type)
+    </insert>
+
+    <delete id="deleteByBatchNoRange" parameterType="String">
+        delete
+        from dt_overtime
+        where
+        batch_no <![CDATA[ >= ]]> #{batchNoStart}
+        and batch_no <![CDATA[ <= ]]> #{batchNoEnd}
+        and company_type = #{companyType}
+        <if test="employeeIds != null">
+            and employee_id
+            <foreach collection="employeeIds" item="employeeId" separator="," open="in(" close=")">
+                #{employeeId}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

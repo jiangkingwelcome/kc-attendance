@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtWorkdayMapper">
+
+    <resultMap type="DtWorkday" id="DtWorkdayResult">
+        <result property="id"    column="id"    />
+        <result property="employeeId"    column="employee_id"    />
+        <result property="name"    column="name"    />
+        <result property="batchNo"    column="batch_no"    />
+        <result property="dataId"    column="data_id"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="date" column="date"/>
+        <result property="jobNumber"    column="job_number"    />
+    </resultMap>
+
+    <sql id="selectDtWorkdayVo">
+        select id, employee_id, name, batch_no, data_id, del_flag,`date`, job_number from dt_workday
+    </sql>
+
+    <select id="selectDtWorkdayList" parameterType="DtWorkday" resultMap="DtWorkdayResult">
+        <include refid="selectDtWorkdayVo"/>
+        <where>
+            <if test="employeeId != null  and employeeId != ''"> and employee_id = #{employeeId}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="batchNo != null  and batchNo != ''"> and batch_no = #{batchNo}</if>
+            <if test="dataId != null  and dataId != ''"> and data_id = #{dataId}</if>
+            <if test="date != null  and date != ''">and date = #{date}</if>
+            <if test="beginBatchNo != null  and beginBatchNo != ''">and batch_no <![CDATA[ >= ]]> #{beginBatchNo}</if>
+            <if test="endBatchNo != null  and endBatchNo != ''">and batch_no <![CDATA[ <= ]]> #{endBatchNo}</if>
+            <if test="jobNumber != null  and jobNumber != ''"> and job_number = #{jobNumber}</if>
+        </where>
+    </select>
+
+    <select id="selectDtWorkdayById" parameterType="Long" resultMap="DtWorkdayResult">
+        <include refid="selectDtWorkdayVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDtWorkday" parameterType="DtWorkday" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_workday
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id,</if>
+            <if test="name != null">name,</if>
+            <if test="batchNo != null">batch_no,</if>
+            <if test="dataId != null and dataId != ''">data_id,</if>
+            <if test="delFlag != null and delFlag != ''">del_flag,</if>
+            <if test="date != null">date,</if>
+            <if test="jobNumber != null">job_number,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">#{employeeId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="batchNo != null">#{batchNo},</if>
+            <if test="dataId != null and dataId != ''">#{dataId},</if>
+            <if test="delFlag != null and delFlag != ''">#{delFlag},</if>
+            <if test="date != null">#{date},</if>
+            <if test="jobNumber != null">#{jobNumber},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDtWorkday" parameterType="DtWorkday">
+        update dt_workday
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id = #{employeeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="batchNo != null">batch_no = #{batchNo},</if>
+            <if test="dataId != null and dataId != ''">data_id = #{dataId},</if>
+            <if test="delFlag != null and delFlag != ''">del_flag = #{delFlag},</if>
+            <if test="date != null">date = #{date},</if>
+            <if test="jobNumber != null">job_number = #{jobNumber},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDtWorkdayById" parameterType="Long">
+        delete from dt_workday where id = #{id}
+    </delete>
+
+    <delete id="deleteDtWorkdayByIds" parameterType="String">
+        delete from dt_workday where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_workday(employee_id,job_number, name, batch_no, data_id, del_flag,date)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.employeeId},
+            #{item.jobNumber},
+            #{item.name},
+            #{item.batchNo},
+            #{item.dataId},
+            #{item.delFlag},
+            #{item.date}
+            )
+        </foreach>
+        on duplicate key update
+        `employee_id` = values(employee_id),
+        `job_number` = values(job_number),
+        `name` = values(`name`),
+        `batch_no` = values(`batch_no`),
+        `del_flag` = values(`del_flag`),
+        `date` = values(`date`)
+    </insert>
+</mapper>

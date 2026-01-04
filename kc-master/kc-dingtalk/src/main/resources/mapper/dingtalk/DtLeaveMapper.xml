@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtLeaveMapper">
+
+
+    <resultMap type="DtLeave" id="DtLeaveResult">
+        <result property="id" column="id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="name" column="name"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="startTime" column="start_time"/>
+        <result property="startTimeStamp" column="start_time_stamp"/>
+        <result property="endTime" column="end_time"/>
+        <result property="endTimeStamp" column="end_time_stamp"/>
+        <result property="durationUnit" column="duration_unit"/>
+        <result property="leaveNo" column="leave_no"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="dataId" column="data_id"/>
+        <result property="companyType" column="company_type"/>
+        <result property="duration" column="duration"/>
+        <result property="subType" column="sub_type"/>
+        <result property="tagName" column="tag_name"/>
+        <result property="bizType" column="biz_type"/>
+    </resultMap>
+
+    <sql id="selectDtLeaveVo">
+        select id,
+               employee_id,
+               name,
+               batch_no,
+               start_time,
+               start_time_stamp,
+               end_time,
+               end_time_stamp,
+               duration_unit,
+               leave_no,
+               create_by,
+               create_time,
+               update_by,
+               update_time,
+               del_flag,
+               data_id,
+               company_type,
+               duration,
+               sub_type,
+               tag_name,
+               biz_type
+        from dt_leave
+    </sql>
+
+
+    <select id="selectDtLeaveList" parameterType="DtLeave" resultMap="DtLeaveResult">
+        <include refid="selectDtLeaveVo"/>
+        <where>
+            <if test="employeeId != null  and employeeId != ''">and employee_id = #{employeeId}</if>
+            <if test="name != null  and name != ''">and name like concat('%', #{name}, '%')</if>
+            <if test="batchNo != null  and batchNo != ''">and batch_no = #{batchNo}</if>
+            <if test="startTime != null ">and start_time = #{startTime}</if>
+            <if test="startTimeStamp != null  and startTimeStamp != ''">and start_time_stamp = #{startTimeStamp}</if>
+            <if test="endTime != null ">and end_time = #{endTime}</if>
+            <if test="endTimeStamp != null  and endTimeStamp != ''">and end_time_stamp = #{endTimeStamp}</if>
+            <if test="durationUnit != null ">and duration_unit = #{durationUnit}</if>
+            <if test="leaveNo != null  and leaveNo != ''">and leave_no = #{leaveNo}</if>
+            <if test="dataId != null  and dataId != ''">and data_id = #{dataId}</if>
+            <if test="companyType != null  and companyType != ''">and company_type = #{companyType}</if>
+            <if test="batchNoStart != null and batchNoStart != '' ">and batch_no  <![CDATA[ >= ]]> #{batchNoStart}</if>
+            <if test="batchNoEnd != null and batchNoEnd != '' ">and batch_no  <![CDATA[ <= ]]> #{batchNoEnd}</if>
+            <if test="duration != null  and duration != ''">and duration = #{duration}</if>
+            <if test="subType != null  and subType != ''">and sub_type = #{subType}</if>
+            <if test="tagName != null  and tagName != ''">and tag_name like concat('%', #{tagName}, '%')</if>
+            <if test="bizType != null ">and biz_type = #{bizType}</if>
+        </where>
+    </select>
+
+    <select id="selectDtLeaveById" parameterType="Long" resultMap="DtLeaveResult">
+        <include refid="selectDtLeaveVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDtLeave" parameterType="DtLeave" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_leave
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id,</if>
+            <if test="name != null">name,</if>
+            <if test="batchNo != null">batch_no,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="startTimeStamp != null and startTimeStamp != ''">start_time_stamp,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="endTimeStamp != null and endTimeStamp != ''">end_time_stamp,</if>
+            <if test="durationUnit != null">duration_unit,</if>
+            <if test="leaveNo != null and leaveNo != ''">leave_no,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="delFlag != null and delFlag != ''">del_flag,</if>
+            <if test="dataId != null and dataId != ''">data_id,</if>
+            <if test="companyType != null">company_type,</if>
+            <if test="duration != null and duration != ''">duration,</if>
+            <if test="subType != null">sub_type,</if>
+            <if test="tagName != null">tag_name,</if>
+            <if test="bizType != null">biz_type,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">#{employeeId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="batchNo != null">#{batchNo},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="startTimeStamp != null and startTimeStamp != ''">#{startTimeStamp},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="endTimeStamp != null and endTimeStamp != ''">#{endTimeStamp},</if>
+            <if test="durationUnit != null">#{durationUnit},</if>
+            <if test="leaveNo != null and leaveNo != ''">#{leaveNo},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="delFlag != null and delFlag != ''">#{delFlag},</if>
+            <if test="dataId != null and dataId != ''">#{dataId},</if>
+            <if test="companyType != null">#{companyType},</if>
+            <if test="duration != null and duration != ''">#{duration},</if>
+            <if test="subType != null">#{subType},</if>
+            <if test="tagName != null">#{tagName},</if>
+            <if test="bizType != null">#{bizType},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDtLeave" parameterType="DtLeave">
+        update dt_leave
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id = #{employeeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="batchNo != null">batch_no = #{batchNo},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="startTimeStamp != null and startTimeStamp != ''">start_time_stamp = #{startTimeStamp},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="endTimeStamp != null and endTimeStamp != ''">end_time_stamp = #{endTimeStamp},</if>
+            <if test="durationUnit != null">duration_unit = #{durationUnit},</if>
+            <if test="leaveNo != null and leaveNo != ''">leave_no = #{leaveNo},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="delFlag != null and delFlag != ''">del_flag = #{delFlag},</if>
+            <if test="dataId != null and dataId != ''">data_id = #{dataId},</if>
+            <if test="companyType != null">company_type = #{companyType},</if>
+            <if test="duration != null and duration != ''">duration = #{duration},</if>
+            <if test="subType != null">sub_type = #{subType},</if>
+            <if test="tagName != null">tag_name = #{tagName},</if>
+            <if test="bizType != null">biz_type = #{bizType},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDtLeaveById" parameterType="Long">
+        delete
+        from dt_leave
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteDtLeaveByIds" parameterType="String">
+        delete from dt_leave where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        dt_leave(employee_id,`name`,batch_no,start_time,start_time_stamp,end_time,end_time_stamp,duration_unit,leave_no,create_by,create_time,del_flag,data_id,company_type,duration,
+        sub_type,tag_name,biz_type)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.employeeId},
+                #{item.name},
+                #{item.batchNo},
+                #{item.startTime},
+                #{item.startTimeStamp},
+                #{item.endTime},
+                #{item.endTimeStamp},
+                #{item.durationUnit},
+                #{item.leaveNo},
+                #{item.createBy},
+                sysdate(),
+                #{item.delFlag},
+                #{item.dataId},
+                #{item.companyType},
+                #{item.duration},
+                #{item.subType},
+                #{item.tagName},
+                #{item.bizType}
+            )
+        </foreach>
+        on duplicate key update
+        employee_id = values(employee_id),
+        name = values(name),
+        batch_no = values(batch_no),
+        start_time = values(start_time),
+        start_time_stamp = values(start_time_stamp),
+        end_time = values(end_time),
+        end_time_stamp = values(end_time_stamp),
+        duration_unit = values(duration_unit),
+        leave_no = values(leave_no),
+        create_by = values(create_by),
+        create_time= values(create_time),
+        del_flag = values(del_flag),
+        data_id = values(data_id),
+        company_type = values(company_type),
+        duration = values(duration),
+        sub_type = values(sub_type),
+        tag_name = values(tag_name),
+        biz_type = values(biz_type)
+    </insert>
+
+    <delete id="deleteByBatchNoRange" parameterType="String">
+        delete
+        from dt_leave
+        where
+        batch_no <![CDATA[ >= ]]> #{batchNoStart}
+        and batch_no <![CDATA[ <= ]]> #{batchNoEnd}
+        and company_type = #{companyType}
+        <if test="employeeIds != null">
+            and employee_id
+            <foreach collection="employeeIds" item="employeeId" separator="," open="in(" close=")">
+                #{employeeId}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

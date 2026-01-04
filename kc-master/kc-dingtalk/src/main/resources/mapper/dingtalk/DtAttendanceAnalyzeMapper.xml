@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtAttendanceAnalyzeMapper">
+
+    <resultMap type="com.kc.common.core.domain.entity.DtAttendanceAnalyze" id="DtAttendanceAnalyzeResult">
+        <result property="id" column="id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="name" column="name"/>
+        <result property="jobNumber" column="job_number"/>
+        <result property="workTime" column="work_time"/>
+        <result property="offWorkTime" column="off_work_time"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="duration" column="duration"/>
+        <result property="status" column="status"/>
+        <result property="place" column="place"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="leaveRecord" column="leave_record"/>
+        <result property="overtimeType" column="overtime_type"/>
+        <result property="leaveDuration" column="leave_duration"/>
+        <result property="leaveCount" column="leave_count"/>
+        <result property="travelRecord" column="travel_record"/>
+        <result property="travelDuration" column="travel_duration"/>
+        <result property="travelCount" column="travel_count"/>
+        <result property="overtimeDurationDay" column="overtime_duration_day"/>
+        <result property="overtimeDurationHour" column="overtime_duration_hour"/>
+        <result property="empType" column="emp_type"/>
+    </resultMap>
+
+    <sql id="selectDtAttendanceAnalyzeVo">
+        select id,
+               employee_id,
+               name,
+               job_number,
+               work_time,
+               off_work_time,
+               batch_no,
+               create_by,
+               create_time,
+               update_by,
+               update_time,
+               duration,
+               status,
+               place,
+               del_flag,
+               leave_record,
+               overtime_type,
+               leave_duration,
+               leave_count,
+               travel_record,
+               travel_duration,
+               travel_count,
+               overtime_duration_day,
+               overtime_duration_hour,
+               emp_type
+        from dt_attendance_analyze
+    </sql>
+
+    <select id="selectDtAttendanceAnalyzeList" parameterType="com.kc.common.core.domain.dao.AttendanceAnalyzeDao"
+            resultMap="DtAttendanceAnalyzeResult">
+        <include refid="selectDtAttendanceAnalyzeVo"/>
+        where
+        del_flag = '0'
+        <if test="employeeId != null  and employeeId != ''">and employee_id = #{employeeId}</if>
+        <if test="name != null  and name != ''">and name like concat('%', #{name}, '%')</if>
+        <if test="leaveRecord != null  and leaveRecord != ''">
+            and leave_record like concat('%', #{leaveRecord}, '%')
+        </if>
+        <if test="place != null  and place != ''">and place like concat('%', #{place}, '%')</if>
+        <if test="jobNumber != null  and jobNumber != ''">and job_number = #{jobNumber}</if>
+        <if test="workTime != null ">and work_time = #{workTime}</if>
+        <if test="offWorkTime != null ">and off_work_time = #{offWorkTime}</if>
+        <if test="batchNo != null  and batchNo != ''">and batch_no = #{batchNo}</if>
+        <if test="duration != null  and duration != ''">and duration = #{duration}</if>
+        <if test="delFlag != null  and delFlag != ''">and del_flag = #{delFlag}</if>
+        <if test="status != null ">and status = #{status}</if>
+        <if test="leaveRecord != null ">and leave_record = #{leaveRecord}</if>
+        <if test="leaveDuration != null  and leaveDuration != ''">and leave_duration = #{leaveDuration}</if>
+        <if test="leaveCount != null  and leaveCount != ''">and leave_count = #{leaveCount}</if>
+        <if test="travelRecord != null  and travelRecord != ''">and travel_record = #{travelRecord}</if>
+        <if test="travelDuration != null  and travelDuration != ''">and travel_duration = #{travelDuration}</if>
+        <if test="travelCount != null  and travelCount != ''">and travel_count = #{travelCount}</if>
+        <if test="overtimeType != null ">and overtime_type = #{overtimeType}</if>
+        <if test="overtimeDuration != null  and overtimeDuration != ''">and overtime_duration = #{overtimeDuration}</if>
+        <if test="employeeIds != null ">
+            and employee_id in(
+            <foreach collection="employeeIds" item="item" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="employeeNames != null ">
+            and `name` in(
+            <foreach collection="employeeNames" item="nameItem" separator=",">
+                #{nameItem}
+            </foreach>
+            )
+        </if>
+
+        <if test="jobNumbers != null ">
+            and `job_number` in(
+                <foreach collection="jobNumbers" item="jobNumber" separator=",">
+                    #{jobNumber}
+                </foreach>
+            )
+        </if>
+
+        <if test="params.beginBatchNo != null and params.beginBatchNo != '' and params.endBatchNo != null and params.endBatchNo != ''">
+            and batch_no between #{params.beginBatchNo} + 0 and #{params.endBatchNo} + 0
+        </if>
+
+        <if test="params.deptId != null">
+            and employee_id IN(
+                SELECT employee_id from dt_employee where dept_id IN(
+                    SELECT dept_id FROM sys_dept WHERE find_in_set(#{params.deptId}, ancestors) OR dept_id = #{params.deptId}
+                )
+            )
+        </if>
+        <!-- 数据范围过滤 -->
+        <if test="params.dataScope != null and params.dataScope != ''">
+            AND job_number in(
+                SELECT
+                d.job_number
+                FROM
+                dt_employee d
+                LEFT JOIN sys_user_employee ue ON d.employee_id = ue.employee_id
+                WHERE
+                d.del_flag = '0' ${params.dataScope}
+            )
+        </if>
+    </select>
+
+    <select id="selectDtAttendanceAnalyzeById" parameterType="Long" resultMap="DtAttendanceAnalyzeResult">
+        <include refid="selectDtAttendanceAnalyzeVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDtAttendanceAnalyze" parameterType="DtAttendanceAnalyze" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_attendance_analyze
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id,</if>
+            <if test="name != null">name,</if>
+            <if test="jobNumber != null">job_number,</if>
+            <if test="workTime != null">work_time,</if>
+            <if test="offWorkTime != null">off_work_time,</if>
+            <if test="batchNo != null">batch_no,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="duration != null and duration != ''">duration,</if>
+            <if test="status != null">status,</if>
+            <if test="place != null">place,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="leaveRecord != null">leave_record,</if>
+            <if test="overtimeType != null">overtime_type,</if>
+            <if test="leaveDuration != null and leaveDuration != ''">leave_duration,</if>
+            <if test="leaveCount != null and leaveCount != ''">leave_count,</if>
+            <if test="travelRecord != null and travelRecord != ''">travel_record,</if>
+            <if test="travelDuration != null and travelDuration != ''">travel_duration,</if>
+            <if test="travelCount != null and travelCount != ''">travel_count,</if>
+            <if test="overtimeDurationHour != null">overtime_duration_hour,
+            <if test="overtimeDurationDay != null">overtime_duration_day,</if></if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">#{employeeId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="jobNumber != null">#{jobNumber},</if>
+            <if test="workTime != null">#{workTime},</if>
+            <if test="offWorkTime != null">#{offWorkTime},</if>
+            <if test="batchNo != null">#{batchNo},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="duration != null and duration != ''">#{duration},</if>
+            <if test="status != null">#{status},</if>
+            <if test="place != null">#{place},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="leaveRecord != null">#{leaveRecord},</if>
+            <if test="overtimeType != null">#{overtime_type},</if>
+            <if test="leaveDuration != null and leaveDuration != ''">#{leaveDuration},</if>
+            <if test="leaveCount != null and leaveCount != ''">#{leaveCount},</if>
+            <if test="travelRecord != null and travelRecord != ''">#{travelRecord},</if>
+            <if test="travelDuration != null and travelDuration != ''">#{travelDuration},</if>
+            <if test="travelCount != null and travelCount != ''">#{travelCount},</if>
+            <if test="overtimeDurationHour != null">#{overtimeDurationHour},</if>
+            <if test="overtimeDurationDay != null">#{overtimeDurationDay},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDtAttendanceAnalyze" parameterType="DtAttendanceAnalyze">
+        update dt_attendance_analyze
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id = #{employeeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="jobNumber != null and jobNumber != ''">job_number = #{jobNumber},</if>
+            <if test="workTime != null">work_time = #{workTime},</if>
+            <if test="offWorkTime != null">off_work_time = #{offWorkTime},</if>
+            <if test="batchNo != null">batch_no = #{batchNo},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="duration != null and duration != ''">duration = #{duration},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="place != null">place = #{place},</if>
+            <if test="delFlag != null and delFlag !=''">del_flag = #{delFlag},</if>
+            <if test="leaveRecord != null and leaveRecord !=''">leave_record = #{leaveRecord},</if>
+            <if test="overtimeType != null">overtime_type = #{overtimeType},</if>
+            <if test="leaveDuration != null and leaveDuration != ''">leave_duration = #{leaveDuration},</if>
+            <if test="leaveCount != null and leaveCount != ''">leave_count = #{leaveCount},</if>
+            <if test="travelRecord != null and travelRecord != ''">travel_record = #{travelRecord},</if>
+            <if test="travelDuration != null and travelDuration != ''">travel_duration = #{travelDuration},</if>
+            <if test="travelCount != null and travelCount != ''">travel_count = #{travelCount},</if>
+            <if test="overtimeDurationHour != null">overtime_duration_hour = #{overtimeDurationHour},</if>
+            <if test="overtimeDurationDay != null">overtime_duration_day = #{overtimeDurationDay},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDtAttendanceAnalyzeById" parameterType="Long">
+        delete
+        from dt_attendance_analyze
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteDtAttendanceAnalyzeByIds" parameterType="String">
+        delete from dt_attendance_analyze where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsertDtAttendanceAnalyze" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        dt_attendance_analyze(
+            employee_id,
+            name,
+            job_number,
+            work_time,
+            off_work_time,
+            batch_no,
+            create_by,
+            create_time,
+            duration,
+            status,
+            place,
+            del_flag,
+            leave_record,
+            leave_duration,
+            leave_count,
+            travel_record,
+            travel_duration,
+            travel_count,
+            overtime_type,
+            overtime_duration_hour,
+            overtime_duration_day,
+            emp_type
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.employeeId},
+            #{item.name},
+            #{item.jobNumber},
+            #{item.workTime},
+            #{item.offWorkTime},
+            #{item.batchNo},
+            #{item.createBy},
+            sysdate(),
+            #{item.duration},
+            #{item.status},
+            #{item.place},
+            #{item.delFlag},
+            #{item.leaveRecord},
+            #{item.leaveDuration},
+            #{item.leaveCount},
+            #{item.travelRecord},
+            #{item.travelDuration},
+            #{item.travelCount},
+            #{item.overtimeType},
+            #{item.overtimeDurationHour},
+            #{item.overtimeDurationDay},
+             #{item.empType}
+        )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByBatchNoRange" parameterType="String">
+        delete
+        from dt_attendance_analyze
+        where batch_no <![CDATA[ >= ]]> #{batchNoStart}
+          and batch_no <![CDATA[ <= ]]> #{batchNoEnd}
+    </delete>
+</mapper>

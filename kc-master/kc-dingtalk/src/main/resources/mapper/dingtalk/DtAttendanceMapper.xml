@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtAttendanceMapper">
+
+    <resultMap type="DtAttendance" id="DtAttendanceResult">
+        <result property="id" column="id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="name" column="name"/>
+        <result property="userCheckTimeStamp" column="user_check_time_stamp"/>
+        <result property="userCheckTime" column="user_check_time"/>
+        <result property="batchNo" column="batch_no"/>
+        <result property="type" column="type"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="companyType" column="company_type"/>
+        <result property="dataType" column="data_type"/>
+        <result property="dataId" column="data_id"/>
+        <result property="place" column="place"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <sql id="selectDtAttendanceVo">
+        select a.id,
+               a.employee_id,
+               a.name,
+               a.user_check_time_stamp,
+               a.user_check_time,
+               a.batch_no,
+               a.type,
+               a.create_by,
+               a.create_time,
+               a.update_by,
+               a.update_time,
+               a.company_type,
+               a.data_type,
+               a.data_id,
+               a.place,
+               a.del_flag
+        from dt_attendance a
+    </sql>
+
+    <select id="selectDtAttendanceList" parameterType="AttendanceDao" resultMap="DtAttendanceResult">
+        <include refid="selectDtAttendanceVo"/>
+        where a.del_flag = '0'
+        <if test="employeeId != null  and employeeId != ''">and a.employee_id = #{employeeId}</if>
+        <if test="name != null  and name != ''">and a.name like concat('%', #{name}, '%')</if>
+        <if test="place != null  and place != ''">and a.place like concat('%', #{place}, '%')</if>
+        <if test="delFlag != null">and a.del_flag = #{delFlag}</if>
+        <if test="userCheckTimeStamp != null  and userCheckTimeStamp != ''">and a.user_check_time_stamp =  #{userCheckTimeStamp} </if>
+        <if test="params.beginUserCheckTime != null and params.beginUserCheckTime != '' and params.endUserCheckTime != null and params.endUserCheckTime != ''">
+            and a.user_check_time between #{params.beginUserCheckTime} and #{params.endUserCheckTime}
+        </if>
+        <if test="params.beginBatchNo != null and params.beginBatchNo != '' and params.endBatchNo != null and params.endBatchNo != ''">
+            and a.batch_no between #{params.beginBatchNo} and #{params.endBatchNo}
+        </if>
+        <if test="type != null ">and a.type = #{type}</if>
+        <if test="companyType != null ">and a.company_type = #{companyType}</if>
+        <if test="dataType != null ">and a.data_type = #{dataType}</if>
+        <if test="dataId != null  and dataId != ''">and a.data_id = #{dataId}</if>
+        <if test="dataIds != null">
+            and a.data_id in(
+            <foreach collection="dataIds" item="item" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="employeeIds != null">
+            and a.employee_id
+            <foreach collection="employeeIds" item="employeeId" separator="," open="in(" close=")">
+                #{employeeId}
+            </foreach>
+        </if>
+        <if test="ids != null">
+            and a.id in(
+            <foreach collection="ids" item="id" separator=",">
+                #{id}
+            </foreach>
+            )
+        </if>
+        <if test="params.deptId != null">
+            AND a.employee_id IN (
+            SELECT
+            employee_id
+            FROM
+            dt_employee
+            WHERE
+            dept_id IN (
+            SELECT
+            dept_id
+            FROM
+            sys_dept
+            WHERE
+            find_in_set(#{params.deptId}, ancestors) OR dept_id = #{params.deptId} ))
+        </if>
+        <!-- 数据范围过滤 -->
+        <if test="params.dataScope != null and params.dataScope != ''">
+            AND a.employee_id in(
+            SELECT
+            d.employee_id
+            FROM
+            dt_employee d
+            LEFT JOIN sys_user_employee ue ON d.employee_id = ue.employee_id
+            WHERE
+            d.del_flag = '0' ${params.dataScope}
+            )
+        </if>
+    </select>
+
+    <select id="selectDtAttendanceById" parameterType="Long" resultMap="DtAttendanceResult">
+        <include refid="selectDtAttendanceVo"/>
+        where a.id = #{id}
+    </select>
+
+    <insert id="insertDtAttendance" parameterType="DtAttendance" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_attendance
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id,</if>
+            <if test="name != null">name,</if>
+            <if test="place != null">place,</if>
+            <if test="userCheckTimeStamp != null and userCheckTimeStamp != ''">user_check_time_stamp,</if>
+            <if test="userCheckTime != null">user_check_time,</if>
+            <if test="batchNo != null">batch_no,</if>
+            <if test="type != null">type,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="companyType != null">company_type,</if>
+            <if test="dataType != null">data_type,</if>
+            <if test="dataId != null  and dataId != ''">data_id,</if>
+            <if test="delFlag != null  and dataId != ''">del_flag,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">#{employeeId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="place != null">#{place},</if>
+            <if test="userCheckTimeStamp != null and userCheckTimeStamp != ''">#{userCheckTimeStamp},</if>
+            <if test="userCheckTime != null">#{userCheckTime},</if>
+            <if test="batchNo != null">#{batchNo},</if>
+            <if test="type != null">#{type},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="companyType != null">#{companyType},</if>
+            <if test="dataType != null">#{dataType},</if>
+            <if test="dataId != null  and dataId != ''">#{dataId},</if>
+            <if test="delFlag != null  and delFlag != ''">#{delFlag},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDtAttendance" parameterType="DtAttendance">
+        update dt_attendance
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id = #{employeeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="place != null">place = #{place},</if>
+            <if test="userCheckTimeStamp != null and userCheckTimeStamp != ''">user_check_time_stamp =
+                #{userCheckTimeStamp},
+            </if>
+            <if test="userCheckTime != null">user_check_time = #{userCheckTime},</if>
+            <if test="batchNo != null">batch_no = #{batchNo},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="companyType != null">company_type = #{companyType},</if>
+            <if test="dataType != null">data_type = #{dataType},</if>
+            <if test="dataId != null">data_id = #{dataId},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateAttendanceByDataId" parameterType="DtAttendance">
+        update dt_attendance
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id = #{employeeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="place != null">place = #{place},</if>
+            <if test="userCheckTimeStamp != null and userCheckTimeStamp != ''">user_check_time_stamp =
+                #{userCheckTimeStamp},
+            </if>
+            <if test="userCheckTime != null">user_check_time = #{userCheckTime},</if>
+            <if test="batchNo != null">batch_no = #{batchNo},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="companyType != null">company_type = #{companyType},</if>
+            <if test="dataType != null">data_type = #{dataType},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+        </trim>
+        where data_id = #{dataId}
+    </update>
+
+    <delete id="deleteDtAttendanceById" parameterType="Long">
+        delete
+        from dt_attendance
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteDtAttendanceByIds" parameterType="String">
+        delete from dt_attendance where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getListByParams" resultType="com.kc.common.core.domain.dao.GetListByParamsResults">
+        SELECT
+            wd.employee_id as "userId",
+            wd.`name`,
+            wd.job_number jobNumber,
+            wd.batch_no as "batchNo",
+            IFNULL(a.attendanceCount,0) "attendanceCount",
+            a.workTime "workTime" ,
+            a.offWorkTime "offWorkTime",
+            a.place "place",
+            a.emp_type as "empType",
+            b.leave as "leave",
+            b.duration as "leaveDuration",
+            b.count as "leaveCount",
+            t.travel as "travel",
+            t.duration as "travelDuration",
+            t.count as "travelCount",
+            ot.durationDay as "overtimeDurationDay",
+            ot.durationHour as "overtimeDurationHour",
+            ot.type overtimeType
+        from dt_workday wd
+        left join dt_holiday h on wd.batch_no = h.cur_day
+        LEFT JOIN
+        (
+            SELECT
+                e.job_number,
+                e.emp_type,
+                count( e.job_number ) AS "attendanceCount",
+                DATE_FORMAT( min( user_check_time ), '%Y-%m-%d %H:%i:%S' ) AS "workTime",
+                DATE_FORMAT( max( user_check_time ), '%Y-%m-%d %H:%i:%S' ) AS "offWorkTime",
+                batch_no,
+                GROUP_CONCAT( place ORDER BY user_check_time ASC SEPARATOR "|" ) AS "place"
+            FROM
+                dt_attendance a
+            LEFT JOIN (select job_number,employee_id,emp_type from dt_employee where job_number is not null and job_number != '' group by employee_id) e  on a.employee_id = e.employee_id
+            where
+                e.job_number is not null
+                and e.job_number != ''
+                <if test="beginBatchNo != null  and beginBatchNo != ''">and batch_no <![CDATA[ >= ]]> #{beginBatchNo}</if>
+                <if test="endBatchNo != null  and endBatchNo != ''">and batch_no <![CDATA[ <= ]]> #{endBatchNo}</if>
+            GROUP BY e.job_number, batch_no
+        ) a on a.job_number = wd.job_number and a.batch_no = wd.batch_no
+        LEFT JOIN (
+            SELECT
+                e.job_number,
+                batch_no,
+                GROUP_CONCAT( CONCAT(IFNULL(sub_type,"未知类型"),":",start_time, "——", end_time ) SEPARATOR '|' ) as 'leave',
+                round(sum(duration),2) duration,
+                count(*) `count`
+            FROM
+                dt_leave l
+            LEFT JOIN (select job_number,employee_id from dt_employee where job_number is not null and job_number != '' group by employee_id) e  on l.employee_id = e.employee_id
+            where
+            e.job_number is not null
+            and e.job_number != ''
+            <if test="beginBatchNo != null  and beginBatchNo != ''">and batch_no <![CDATA[ >= ]]> #{beginBatchNo}</if>
+            <if test="endBatchNo != null  and endBatchNo != ''">and batch_no <![CDATA[ <= ]]> #{endBatchNo}</if>
+            GROUP BY  e.job_number, batch_no
+        ) b ON wd.job_number = b.job_number and wd.batch_no = b.batch_no
+        LEFT JOIN (
+            SELECT
+                e.job_number,
+                batch_no,
+                GROUP_CONCAT( CONCAT(form_name,":",start_time, "——", end_time ) SEPARATOR '|' ) as 'travel',
+                round(sum(duration),2) duration,
+                count(*) `count`
+            FROM
+                dt_travel t
+            LEFT JOIN (select job_number,employee_id from dt_employee where job_number is not null and job_number != '' group by employee_id) e on t.employee_id = e.employee_id
+            where
+            e.job_number is not null
+            and e.job_number != ''
+            and order_status = '1003'
+            and reject_type = '1000'
+            <if test="beginBatchNo != null  and beginBatchNo != ''">and batch_no <![CDATA[ >= ]]> #{beginBatchNo}</if>
+            <if test="endBatchNo != null  and endBatchNo != ''">and batch_no <![CDATA[ <= ]]> #{endBatchNo}</if>
+            GROUP BY e.job_number, batch_no
+        ) t ON wd.job_number = t.job_number and wd.batch_no = t.batch_no
+        LEFT JOIN (
+            SELECT e.job_number,
+                   batch_no,
+                   type,
+                   IF(type = 0 or type = 1, round(sum(duration),2), NULL) durationDay,
+                   IF(type = 2, round(sum(duration),2), NULL) durationHour
+            FROM dt_overtime ot
+            LEFT JOIN (select job_number,employee_id from dt_employee where job_number is not null and job_number != '' group by employee_id) e on ot.employee_id = e.employee_id
+            where
+            e.job_number is not null
+            and e.job_number != ''
+            <if test="beginBatchNo != null  and beginBatchNo != ''">and batch_no <![CDATA[ >= ]]> #{beginBatchNo}</if>
+            <if test="endBatchNo != null  and endBatchNo != ''">and batch_no <![CDATA[ <= ]]> #{endBatchNo}</if>
+
+            GROUP BY e.job_number, batch_no
+        ) ot on wd.job_number = ot.job_number and wd.batch_no = ot.batch_no
+        where
+            (a.job_number is not null or b.job_number is not null or ot.job_number is not null or t.job_number is not null or h.day_type = '1')
+            and wd.job_number is not null
+            and wd.job_number != ''
+            <if test="beginBatchNo != null  and beginBatchNo != ''">
+                and wd.batch_no <![CDATA[ >= ]]>#{beginBatchNo}
+            </if>
+            <if test="endBatchNo != null  and endBatchNo != ''">
+                and wd.batch_no <![CDATA[ <= ]]> #{endBatchNo}
+            </if>
+        GROUP BY wd.job_number, wd.batch_no
+    </select>
+
+    <delete id="deleteByBatchNoRange" parameterType="String">
+        delete
+        from dt_attendance
+        where batch_no <![CDATA[ >= ]]> #{batchNoStart}
+          and batch_no <![CDATA[ <= ]]> #{batchNoEnd}
+    </delete>
+
+    <delete id="batchDeleteByDataIds">
+        delete from dt_attendance where data_id in
+        <foreach collection="list" item="dataId" open="(" separator="," close=")">
+            #{dataId}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsertDtAttendance" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        dt_attendance(employee_id,name,user_check_time_stamp,user_check_time,batch_no,type,create_by,create_time,update_by,update_time,company_type,data_type,data_id,place,del_flag)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.employeeId},
+            #{item.name},
+            #{item.userCheckTimeStamp},
+            #{item.userCheckTime},
+            #{item.batchNo},
+            #{item.type},
+            #{item.createBy},
+            #{item.createTime},
+            #{item.updateBy},
+            #{item.updateTime},
+            #{item.companyType},
+            #{item.dataType},
+            #{item.dataId},
+            #{item.place},
+            #{item.delFlag}
+            )
+        </foreach>
+        on duplicate key update place=values(place),update_by=values(update_by),update_time=values(update_time)
+    </insert>
+</mapper>

@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.dingtalk.mapper.DtEmployeeMapper">
+
+    <resultMap type="DtEmployee" id="DtEmployeeResult">
+        <result property="id"    column="id"    />
+        <result property="employeeId"    column="employee_id"    />
+        <result property="name"    column="name"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="unionId"    column="union_id"    />
+        <result property="mobile"    column="mobile"    />
+        <result property="tel"    column="tel"    />
+        <result property="workPlace"    column="work_place"    />
+        <result property="remark"    column="remark"    />
+        <result property="canAdmin"    column="can_admin"    />
+        <result property="canBoss"    column="can_boss"    />
+        <result property="canHide"    column="can_hide"    />
+        <result property="departments"    column="departments"    />
+        <result property="position"    column="position"    />
+        <result property="email"    column="email"    />
+        <result property="orgEmail"    column="org_email"    />
+        <result property="avatar"    column="avatar"    />
+        <result property="jobNumber"    column="job_number"    />
+        <result property="hiredDate"    column="hired_date"    />
+        <result property="extattr"    column="extattr"    />
+        <result property="dataId"    column="data_id"    />
+        <result property="canDimission"    column="can_dimission"    />
+        <result property="updateFlag"    column="update_flag"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="companyType"    column="company_type"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="mainDept"    column="main_dept"    />
+        <result property="cardNum"    column="card_num"    />
+        <result property="empType"    column="emp_type"    />
+        <result property="lastWorkDay"    column="last_work_day"    />
+    </resultMap>
+
+    <sql id="selectDtEmployeeVo">
+        select e.id,e.employee_id,e.name,e.union_id,e.mobile,e.tel,e.work_place,e.remark,e.can_admin,e.can_boss,e.can_hide,e.departments,e.position,e.email,e.org_email,e.avatar,e.job_number,e.hired_date,e.extattr,e.can_dimission,e.update_flag,e.del_flag,e.create_by,e.create_time,e.update_by,e.update_time,e.data_id,e.main_dept,e.card_num,e.emp_type,e.last_work_day,d.dept_id,d.dept_name,d.company_type
+        from dt_employee e
+        left join sys_dept d on e.dept_id = d.dept_id
+    </sql>
+
+    <select id="selectDtEmployeeList" parameterType="EmployeeDao" resultMap="DtEmployeeResult">
+        <include refid="selectDtEmployeeVo"/>
+        where
+        e.del_flag = '0'
+        <if test="employeeId != null  and employeeId != ''"> and e.employee_id = #{employeeId}</if>
+        <if test="name != null  and name != ''"> and e.name like concat('%', #{name}, '%')</if>
+        <if test="unionId != null  and unionId != ''"> and e.union_id = #{unionId}</if>
+        <if test="mobile != null  and mobile != ''"> and e.mobile = #{mobile}</if>
+        <if test="companyType != null">and e.company_type = #{companyType}</if>
+        <if test="tel != null  and tel != ''"> and e.tel = #{tel}</if>
+        <if test="workPlace != null  and workPlace != ''"> and e.work_place like concat('%', #{workPlace}, '%')</if>
+        <if test="dataId != null  and dataId != ''"> and e.data_id = #{dataId}</if>
+        <if test="canAdmin != null  and canAdmin != ''"> and e.can_admin = #{canAdmin}</if>
+        <if test="canBoss != null  and canBoss != ''"> and e.can_boss = #{canBoss}</if>
+        <if test="canHide != null  and canHide != ''"> and e.can_hide = #{canHide}</if>
+        <if test="deptId != null"> and e.dept_id = #{deptId}</if>
+        <if test="departments != null"> and find_in_set(#{departments}, e.departments) </if>
+        <if test="position != null  and position != ''"> and e.position = #{position}</if>
+        <if test="email != null  and email != ''"> and e.email like concat('%', #{email}, '%')</if>
+        <if test="orgEmail != null  and orgEmail != ''"> and e.org_email like concat('%', #{orgEmail}, '%')</if>
+        <if test="avatar != null  and avatar != ''"> and e.avatar = #{avatar}</if>
+        <if test="jobNumber != null  and jobNumber != ''"> and e.job_number = #{jobNumber}</if>
+        <if test="hiredDate != null "> and e.hired_date = #{hiredDate}</if>
+        <if test="extattr != null  and extattr != ''"> and e.extattr = #{extattr}</if>
+        <if test="canDimission != null  and canDimission != ''"> and e.can_dimission = #{canDimission}</if>
+        <if test="updateFlag != null  and updateFlag != ''"> and e.update_flag = #{updateFlag}</if>
+        <if test="mainDept != null"> and e.main_dept = #{mainDept}</if>
+        <if test="cardNum != null  and cardNum != ''"> and e.card_num = #{cardNum}</if>
+        <if test="empType != null "> and e.emp_type = #{empType}</if>
+        <if test="lastWorkDay != null "> and e.last_work_day = #{lastWorkDay}</if>
+        <if test="employeeIds != null">
+            and e.employee_id in(
+                <foreach item="id" collection="employeeIds" separator=",">
+                    #{id}
+                </foreach>
+            )
+        </if>
+        <if test="deptIds != null">
+            and e.dept_id in(
+            <foreach item="a" collection="deptIds" separator=",">
+                #{a}
+            </foreach>
+            )
+        </if>
+        <if test="params.deptId != null">
+            and e.dept_id in(
+                 SELECT dept_id FROM sys_dept WHERE del_flag = '0' and (find_in_set(#{params.deptId}, ancestors) OR dept_id = #{params.deptId})
+            )
+        </if>
+        <if test="params.dataScope != null and params.dataScope != ''">
+            <!-- 数据范围过滤 -->
+            AND e.employee_id in(
+                SELECT
+                d.employee_id
+                FROM
+                dt_employee d
+                LEFT JOIN sys_user_employee ue ON d.employee_id = ue.employee_id
+                WHERE
+                d.del_flag = '0' ${params.dataScope}
+            )
+        </if>
+    </select>
+
+
+    <select id="selectDtEmployeeById" parameterType="Long" resultMap="DtEmployeeResult">
+        <include refid="selectDtEmployeeVo"/>
+        where e.id = #{id}
+    </select>
+
+
+    <insert id="insertDtEmployee" parameterType="DtEmployee" useGeneratedKeys="true" keyProperty="id">
+        insert into dt_employee
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id,</if>
+            <if test="deptId != null">dept_id,</if>
+            <if test="name != null">name,</if>
+            <if test="unionId != null">union_id,</if>
+            <if test="mobile != null">mobile,</if>
+            <if test="tel != null">tel,</if>
+            <if test="workPlace != null">work_place,</if>
+            <if test="remark != null">remark,</if>
+            <if test="dataId != null and dataId != ''">dataId,</if>
+            <if test="canAdmin != null and canAdmin != ''">can_admin,</if>
+            <if test="canBoss != null and canBoss != ''">can_boss,</if>
+            <if test="canHide != null and canHide != ''">can_hide,</if>
+            <if test="companyType != null">company_type,</if>
+            <if test="departments != null">departments,</if>
+            <if test="position != null">position,</if>
+            <if test="email != null">email,</if>
+            <if test="orgEmail != null">org_email,</if>
+            <if test="avatar != null">avatar,</if>
+            <if test="jobNumber != null">job_number,</if>
+            <if test="hiredDate != null">hired_date,</if>
+            <if test="extattr != null">extattr,</if>
+            <if test="canDimission != null">can_dimission,</if>
+            <if test="updateFlag != null">update_flag,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="mainDept != null">main_dept,</if>
+            <if test="cardNum != null">card_num,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">#{employeeId},</if>
+            <if test="deptId != null">#{deptId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="unionId != null">#{unionId},</if>
+            <if test="mobile != null">#{mobile},</if>
+            <if test="tel != null">#{tel},</if>
+            <if test="workPlace != null">#{workPlace},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="dataId != null and dataId != ''">#{dataId},</if>
+            <if test="canAdmin != null and canAdmin != ''">#{canAdmin},</if>
+            <if test="canBoss != null and canBoss != ''">#{canBoss},</if>
+            <if test="canHide != null and canHide != ''">#{canHide},</if>
+            <if test="companyType != null">#{companyType},</if>
+            <if test="departments != null">#{departments},</if>
+            <if test="position != null">#{position},</if>
+            <if test="email != null">#{email},</if>
+            <if test="orgEmail != null">#{orgEmail},</if>
+            <if test="avatar != null">#{avatar},</if>
+            <if test="jobNumber != null">#{jobNumber},</if>
+            <if test="hiredDate != null">#{hiredDate},</if>
+            <if test="extattr != null">#{extattr},</if>
+            <if test="canDimission != null">#{canDimission},</if>
+            <if test="updateFlag != null">#{updateFlag},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="mainDept != null">#{mainDept},</if>
+            <if test="cardNum != null">#{cardNum},</if>
+        </trim>
+    </insert>
+
+    <update id="updateDtEmployee" parameterType="DtEmployee">
+        update dt_employee
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="employeeId != null and employeeId != ''">employee_id = #{employeeId},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="mainDept != null">main_dept = #{mainDept},</if>
+            <if test="cardNum != null">card_num = #{cardNum},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="unionId != null">union_id = #{unionId},</if>
+            <if test="mobile != null">mobile = #{mobile},</if>
+            <if test="tel != null">tel = #{tel},</if>
+            <if test="workPlace != null">work_place = #{workPlace},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="dataId != null">data_id = #{dataId},</if>
+            <if test="canAdmin != null and canAdmin != ''">can_admin = #{canAdmin},</if>
+            <if test="canBoss != null and canBoss != ''">can_boss = #{canBoss},</if>
+            <if test="canHide != null and canHide != ''">can_hide = #{canHide},</if>
+            <if test="companyType != null">company_type = #{companyType},</if>
+            <if test="departments != null">departments = #{departments},</if>
+            <if test="position != null">position = #{position},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="orgEmail != null">org_email = #{orgEmail},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="jobNumber != null">job_number = #{jobNumber},</if>
+            <if test="hiredDate != null">hired_date = #{hiredDate},</if>
+            <if test="lastWorkDay != null">last_work_day = #{lastWorkDay},</if>
+            <if test="extattr != null">extattr = #{extattr},</if>
+            <if test="canDimission != null">can_dimission = #{canDimission},</if>
+            <if test="updateFlag != null">update_flag = #{updateFlag},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where 1=1
+            <if test="id != null or dataId !=null">
+               AND (id = #{id} or data_id = #{dataId})
+            </if>
+            <if test="employeeId != null and employeeId != ''">
+               AND employee_id = #{employeeId}
+            </if>
+            <if test="conpanyType != null">
+               AND  company_type = #{conpanyType}
+            </if>
+    </update>
+
+    <delete id="deleteDtEmployeeById" parameterType="Long">
+        delete from dt_employee where id = #{id}
+    </delete>
+
+    <delete id="deleteDtEmployeeByIds" parameterType="String">
+        delete from dt_employee where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteByEmployeeIds" parameterType="java.util.List">
+        delete from dt_employee where employee_id
+            <foreach item="employeeId" collection="list" open="in(" separator="," close=")">
+                #{employeeId}
+            </foreach>
+    </delete>
+
+    <insert id="batchInsertDtEmployee"  useGeneratedKeys="true" keyProperty="id">
+        insert into dt_employee(employee_id, name, dept_id, union_id, mobile, tel, work_place, remark,data_id, can_admin, company_type,can_boss, can_hide, departments, position, email,
+                                org_email, avatar, job_number, hired_date, extattr, can_dimission, update_flag, del_flag, create_by, create_time, update_by, update_time,main_dept, card_num,emp_type)
+        values
+        <foreach collection="list"  item="e" separator=",">
+            (
+                #{e.employeeId},
+                #{e.name},
+                #{e.deptId},
+                #{e.unionId},
+                #{e.mobile},
+                #{e.tel},
+                #{e.workPlace},
+                #{e.remark},
+                #{e.dataId},
+                #{e.canAdmin},
+                #{e.companyType},
+                #{e.canBoss},
+                #{e.canHide},
+                #{e.departments},
+                #{e.position},
+                #{e.email},
+                #{e.orgEmail},
+                #{e.avatar},
+                #{e.jobNumber},
+                #{e.hiredDate},
+                #{e.extattr},
+                #{e.canDimission},
+                #{e.updateFlag},
+                #{e.delFlag},
+                #{e.createBy},
+                #{e.createTime},
+                #{e.updateBy},
+                #{e.updateTime},
+                #{e.mainDept},
+                #{e.cardNum},
+                #{e.empType}
+            )
+        </foreach>
+    </insert>
+
+
+    <select id="getUnCreateAccountEmployees"  resultMap="DtEmployeeResult">
+        SELECT employee_id,job_number,name
+        FROM dt_employee
+        WHERE
+            del_flag = '0'
+          AND job_number is not null
+          AND job_number !=''
+          AND employee_id not in(SELECT employee_id from sys_user_employee)
+          GROUP BY employee_id
+    </select>
+
+    <select id="findAllEmpByDeptId"  resultMap="DtEmployeeResult">
+        <include refid="selectDtEmployeeVo"/>
+        where
+        e.del_flag = '0'
+        and e.dept_id in(
+        SELECT dept_id FROM sys_dept WHERE del_flag = '0' and (find_in_set(#{deptId}, ancestors) OR dept_id = #{deptId})
+        )
+    </select>
+
+    <update id="dimissionAll">
+        update dt_employee set can_dimission = '1'
+    </update>
+
+    <update id="batchUpdate"  parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update dt_employee
+            <trim prefix="SET" suffixOverrides=",">
+                <if test="item.employeeId != null and item.employeeId != ''">employee_id = #{item.employeeId},</if>
+                <if test="item.deptId != null">dept_id = #{item.deptId},</if>
+                <if test="item.empType != null">emp_type = #{item.empType},</if>
+                <if test="item.mainDept != null">main_dept = #{item.mainDept},</if>
+                <if test="item.cardNum != null">card_num = #{item.cardNum},</if>
+                <if test="item.name != null">name = #{item.name},</if>
+                <if test="item.unionId != null">union_id = #{item.unionId},</if>
+                <if test="item.mobile != null">mobile = #{item.mobile},</if>
+                <if test="item.tel != null">tel = #{item.tel},</if>
+                <if test="item.workPlace != null">work_place = #{item.workPlace},</if>
+                <if test="item.remark != null">remark = #{item.remark},</if>
+                <if test="item.dataId != null">data_id = #{item.dataId},</if>
+                <if test="item.canAdmin != null and item.canAdmin != ''">can_admin = #{item.canAdmin},</if>
+                <if test="item.canBoss != null and item.canBoss != ''">can_boss = #{item.canBoss},</if>
+                <if test="item.canHide != null and item.canHide != ''">can_hide = #{item.canHide},</if>
+                <if test="item.companyType != null">company_type = #{item.companyType},</if>
+                <if test="item.departments != null">departments = #{item.departments},</if>
+                <if test="item.position != null">position = #{item.position},</if>
+                <if test="item.email != null">email = #{item.email},</if>
+                <if test="item.orgEmail != null">org_email = #{item.orgEmail},</if>
+                <if test="item.avatar != null">avatar = #{item.avatar},</if>
+                <if test="item.jobNumber != null">job_number = #{item.jobNumber},</if>
+                <if test="item.hiredDate != null">hired_date = #{item.hiredDate},</if>
+                <if test="item.lastWorkDay != null">last_work_day = #{item.lastWorkDay},</if>
+                <if test="item.extattr != null">extattr = #{item.extattr},</if>
+                <if test="item.canDimission != null and item.canDimission != ''">can_dimission = #{item.canDimission},</if>
+                <if test="item.updateFlag != null">update_flag = #{item.updateFlag},</if>
+                <if test="item.delFlag != null">del_flag = #{item.delFlag},</if>
+                <if test="item.createBy != null">create_by = #{item.createBy},</if>
+                <if test="item.createTime != null">create_time = #{item.createTime},</if>
+                <if test="item.updateBy != null">update_by = #{item.updateBy},</if>
+                <if test="item.updateTime != null">update_time = #{item.updateTime},</if>
+            </trim>
+            where 1=1
+            <if test="item.id != null or item.dataId != null">
+                AND (id = #{item.id} or data_id = #{item.dataId})
+            </if>
+            <if test="item.employeeId != null and item.employeeId != ''">
+                AND employee_id = #{item.employeeId}
+            </if>
+            <if test="item.companyType != null">
+                AND company_type = #{item.companyType}
+            </if>
+        </foreach>
+    </update>
+
+
+</mapper>
