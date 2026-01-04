@@ -130,6 +130,9 @@ public class DtEmployeeWork extends BaseEntity
     @Excel(name = "离职日期", dateFormat = "yyyy-MM-dd")
     private String lastWorkDay;
 
+    /** 异常类型 */
+    @Excel(name = "异常类型")
+    private String anomalyType;
 
     private String employeeId;
 }

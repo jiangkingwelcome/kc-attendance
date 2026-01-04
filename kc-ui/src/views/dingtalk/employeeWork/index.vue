@@ -91,6 +91,15 @@
       <el-table-column label="迟到&工时不足(天数)" align="center" prop="lateworkUndertime" />
       <el-table-column label="迟到&工时满足(天数)" align="center" prop="lateworkAbovetime" />
       <el-table-column label="准时&工时不足(天数)" align="center" prop="earlyworkUndertime" />
+      <el-table-column label="异常类型" align="center" prop="anomalyType" width="120">
+        <template slot-scope="scope">
+          <el-tag
+            :type="getAnomalyTagType(scope.row.anomalyType)"
+            disable-transitions>
+            {{ scope.row.anomalyType || '无异常' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="入职日期" align="center" prop="hiredDate" />
       <el-table-column label="离职日期" align="center" prop="lastWorkDay" />
 
@@ -227,6 +236,22 @@ export default {
       this.download('dingtalk/employeeWork/export', {
         ...this.queryParams
       }, `employeeWork_${new Date().getTime()}.xlsx`)
+    },
+
+    /** 根据异常类型返回标签样式 */
+    getAnomalyTagType(anomalyType) {
+      switch(anomalyType) {
+        case '无异常':
+          return 'success';
+        case '轻度异常':
+          return 'warning';
+        case '中度异常':
+          return 'danger';
+        case '重度异常':
+          return 'danger';
+        default:
+          return 'info';
+      }
     }
   }
 };

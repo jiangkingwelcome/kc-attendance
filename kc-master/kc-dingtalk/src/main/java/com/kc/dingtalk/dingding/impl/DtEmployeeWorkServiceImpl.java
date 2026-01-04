@@ -118,7 +118,100 @@ public class DtEmployeeWorkServiceImpl implements IDtEmployeeWorkService {
                 }
                 item.setDeptNameChain(deptNameChain);
             }
+
+            // 计算异常类型
+            String anomalyType = calculateAnomalyType(item);
+            item.setAnomalyType(anomalyType);
         }
         return dtEmployeeWorks;
+    }
+
+    /**
+     * 计算异常类型
+     * @param work 员工工作统计数据
+     * @return 异常类型：无异常、轻度异常、中度异常、重度异常
+     */
+    private String calculateAnomalyType(DtEmployeeWork work) {
+        try {
+            // 计算异常天数 = 应出未出天数 + 迟到&工时不足 + 准时&工时不足
+            double ywcounts = parseDouble(work.getYwcounts());  // 应出未出天数
+            double lateworkUndertime = parseDouble(work.getLateworkUndertime());  // 迟到&工时不足
+            double earlyworkUndertime = parseDouble(work.getEarlyworkUndertime());  // 准时&工时不足
+            double anomalyDays = ywcounts + lateworkUndertime + earlyworkUndertime;
+
+            // 平均工时
+            double avgDuration = parseDouble(work.getAvgduration());
+
+            // 根据异常天数判断异常等级
+            String dayAnomalyLevel = getAnomalyLevelByDays(anomalyDays);
+
+            // 根据平均工时判断异常等级
+            String durationAnomalyLevel = getAnomalyLevelByDuration(avgDuration);
+
+            // 返回较严重的异常等级
+            return getMaxAnomalyLevel(dayAnomalyLevel, durationAnomalyLevel);
+        } catch (Exception e) {
+            return "无异常";
+        }
+    }
+
+    /**
+     * 根据异常天数判断异常等级
+     */
+    private String getAnomalyLevelByDays(double days) {
+        if (days == 0) {
+            return "无异常";
+        } else if (days > 0 && days <= 5) {
+            return "轻度异常";
+        } else if (days > 5 && days < 10) {
+            return "中度异常";
+        } else {  // days >= 10
+            return "重度异常";
+        }
+    }
+
+    /**
+     * 根据平均工时判断异常等级
+     */
+    private String getAnomalyLevelByDuration(double duration) {
+        if (duration >= 10) {
+            return "无异常";
+        } else if (duration >= 9.5 && duration < 10) {
+            return "轻度异常";
+        } else if (duration >= 9 && duration < 9.5) {
+            return "中度异常";
+        } else {  // duration < 9
+            return "重度异常";
+        }
+    }
+
+    /**
+     * 获取两个异常等级中较严重的一个
+     */
+    private String getMaxAnomalyLevel(String level1, String level2) {
+        Map<String, Integer> levelMap = new HashMap<>();
+        levelMap.put("无异常", 0);
+        levelMap.put("轻度异常", 1);
+        levelMap.put("中度异常", 2);
+        levelMap.put("重度异常", 3);
+
+        int weight1 = levelMap.getOrDefault(level1, 0);
+        int weight2 = levelMap.getOrDefault(level2, 0);
+
+        return weight1 >= weight2 ? level1 : level2;
+    }
+
+    /**
+     * 安全解析字符串为double
+     */
+    private double parseDouble(String str) {
+        if (StringUtils.isBlank(str)) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(str.trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
 }
