@@ -103,4 +103,9 @@ public class DtLeaveServiceImpl implements IDtLeaveService
     public void deleteByBatchNoRange(String batchNoStart, String batchNoEnd,List<String> employeeIds,Integer companyType) {
          dtLeaveMapper.deleteByBatchNoRange(batchNoStart,batchNoEnd,employeeIds,companyType);
     }
+
+    @Override
+    public int getTodayLeaveCount() {
+        return dtLeaveMapper.getTodayLeaveCount();
+    }
 }

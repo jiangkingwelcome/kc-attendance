@@ -98,4 +98,11 @@ public interface DtEmployeeMapper
 
     void batchUpdate(List<DtEmployee> list);
 
+    /**
+     * 查询本月新入职人数
+     *
+     * @return 本月新入职人数
+     */
+    int getThisMonthNewHireCount();
+
 }

@@ -139,4 +139,14 @@ public class DtEmployeeController extends BaseController
     {
         return success("ok");
     }
+
+    /**
+     * 查询本月新入职人数
+     */
+    @GetMapping("/thisMonthNewHireCount")
+    public AjaxResult getThisMonthNewHireCount()
+    {
+        int count = dtEmployeeService.getThisMonthNewHireCount();
+        return success(count);
+    }
 }

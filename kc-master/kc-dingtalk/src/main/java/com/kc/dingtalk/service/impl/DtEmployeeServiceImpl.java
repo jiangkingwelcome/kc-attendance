@@ -131,4 +131,9 @@ public class DtEmployeeServiceImpl implements IDtEmployeeService
     public List<DtEmployee> selectDtEmployeeListNoAuth(EmployeeDao employeeQuery) {
         return dtEmployeeMapper.selectDtEmployeeList(employeeQuery);
     }
+
+    @Override
+    public int getThisMonthNewHireCount() {
+        return dtEmployeeMapper.getThisMonthNewHireCount();
+    }
 }

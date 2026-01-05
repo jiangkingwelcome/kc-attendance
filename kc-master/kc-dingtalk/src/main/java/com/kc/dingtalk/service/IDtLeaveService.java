@@ -75,4 +75,11 @@ public interface IDtLeaveService
      * @date: 2023/10/10 10:01
      */
     void deleteByBatchNoRange(String batchNoStart,String batchNoEnd,List<String> employeeIds,Integer companyType);
+
+    /**
+     * 查询今日请假人数
+     *
+     * @return 今日请假人数
+     */
+    int getTodayLeaveCount();
 }

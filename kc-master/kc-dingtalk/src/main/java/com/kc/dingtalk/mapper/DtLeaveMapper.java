@@ -81,4 +81,11 @@ public interface DtLeaveMapper
                               @Param("employeeIds")List<String> employeeIds,
                               @Param("companyType")Integer companyType
     );
+
+    /**
+     * 查询今日请假人数
+     *
+     * @return 今日请假人数
+     */
+    int getTodayLeaveCount();
 }

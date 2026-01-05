@@ -83,4 +83,11 @@ public interface IDtEmployeeService
      */
     List<DtEmployee> selectDtEmployeeListNoAuth(EmployeeDao employeeQuery);
 
+    /**
+     * 查询本月新入职人数
+     *
+     * @return 本月新入职人数
+     */
+    int getThisMonthNewHireCount();
+
 }

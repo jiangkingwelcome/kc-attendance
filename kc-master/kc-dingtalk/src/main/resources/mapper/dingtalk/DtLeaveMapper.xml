@@ -233,4 +233,12 @@
             </foreach>
         </if>
     </delete>
+
+    <select id="getTodayLeaveCount" resultType="int">
+        SELECT COUNT(DISTINCT employee_id)
+        FROM dt_leave
+        WHERE del_flag = '0'
+          AND DATE(start_time) <![CDATA[ <= ]]> CURDATE()
+          AND DATE(end_time) <![CDATA[ >= ]]> CURDATE()
+    </select>
 </mapper>

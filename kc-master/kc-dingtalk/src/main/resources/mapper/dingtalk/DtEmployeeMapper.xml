@@ -366,5 +366,11 @@
         </foreach>
     </update>
 
+    <select id="getThisMonthNewHireCount" resultType="int">
+        SELECT COUNT(*)
+        FROM dt_employee
+        WHERE del_flag = '0'
+          AND DATE_FORMAT(hired_date, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+    </select>
 
 </mapper>
