@@ -33,12 +33,20 @@ module.exports = {
     port: port,
     open: true,
     proxy: {
-      // detail: https://cli.vuejs.org/config/#devserver-proxy
-      [process.env.VUE_APP_BASE_API]: {
-        target: `http://localhost:8080`,
+      // Proxy for local development
+      '/dev-api': {
+        target: 'http://localhost:8080',
         changeOrigin: true,
         pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API]: ''
+          '^/dev-api': ''
+        }
+      },
+      // Proxy for remote development (fixes CORS)
+      '/stage-api': {
+        target: 'https://jiangking.v3cu.com:8081',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/stage-api': ''
         }
       }
     },

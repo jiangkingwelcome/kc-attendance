@@ -8,7 +8,7 @@
   }
 
   .sidebarHide {
-    margin-left: 0!important;
+    margin-left: 0 !important;
   }
 
   .sidebar-container {
@@ -24,8 +24,8 @@
     left: 0;
     z-index: 1001;
     overflow: hidden;
-    -webkit-box-shadow: 2px 0 6px rgba(0,21,41,.35);
-    box-shadow: 2px 0 6px rgba(0,21,41,.35);
+    -webkit-box-shadow: 2px 0 6px rgba(0, 21, 41, .35);
+    box-shadow: 2px 0 6px rgba(0, 21, 41, .35);
 
     // reset element-ui css
     .horizontal-collapse-transition {
@@ -70,7 +70,8 @@
       width: 100% !important;
     }
 
-    .el-menu-item, .el-submenu__title {
+    .el-menu-item,
+    .el-submenu__title {
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
@@ -84,7 +85,7 @@
       }
     }
 
-    & .theme-dark .is-active > .el-submenu__title {
+    & .theme-dark .is-active>.el-submenu__title {
       color: $base-menu-color-active !important;
     }
 
@@ -100,9 +101,32 @@
     & .theme-dark .nest-menu .el-submenu>.el-submenu__title,
     & .theme-dark .el-submenu .el-menu-item {
       background-color: $base-sub-menu-background !important;
+      transition: all 0.3s;
 
       &:hover {
         background-color: $base-sub-menu-hover !important;
+        color: #fff !important;
+      }
+
+      // Modern Active State Indicator
+      &.is-active {
+        // Gradient Background (Left to Right Fade)
+        background: linear-gradient(90deg, rgba(56, 117, 246, 0.15) 0%, rgba(56, 117, 246, 0.02) 100%) !important;
+
+        border-right: 3px solid #3875F6;
+        color: #3875F6 !important;
+
+        // Icon Glow Effect
+        i,
+        .svg-icon {
+          filter: drop-shadow(0 0 5px rgba(56, 117, 246, 0.6));
+          transform: scale(1.1);
+          transition: all 0.3s;
+        }
+
+        span {
+          font-weight: 600;
+        }
       }
     }
   }

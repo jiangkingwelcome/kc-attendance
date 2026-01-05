@@ -102,8 +102,12 @@ export default {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #fff;
+  // Glassmorphism Navbar
+  background: rgba(255, 255, 255, 0.8) !important; // 80% opacity
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  z-index: 1001; // Ensure it floats above content
 
   .hamburger-container {
     line-height: 46px;

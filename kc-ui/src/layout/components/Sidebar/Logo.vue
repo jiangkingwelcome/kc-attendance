@@ -76,11 +76,17 @@ export default {
       display: inline-block;
       margin: 0;
       color: #fff;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 50px;
-      font-size: 14px;
-      font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
+      font-size: 16px; // Slightly larger
+      // Gradient Text
+      background: linear-gradient(to right, #ffffff, #93C5FD);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      
+      font-family: Inter, Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
+      letter-spacing: 0.5px;
     }
   }
 

@@ -2,6 +2,7 @@
   <div class="login">
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
       <h3 class="title">考勤管理平台</h3>
+      <div class="login-quote">{{ currentQuote }}</div>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -54,10 +55,7 @@
         </div>
       </el-form-item>
     </el-form>
-    <!--  底部  -->
-    <div class="el-login-footer">
-      <span>Copyright © 2018-2022 kc.vip All Rights Reserved.</span>
-    </div>
+
   </div>
 </template>
 
@@ -71,9 +69,10 @@ export default {
   data() {
     return {
       codeUrl: "",
+      currentQuote: "",
       loginForm: {
-        username: "",
-        password: "",
+        username: "admin",
+        password: "123456",
         rememberMe: false,
         code: "",
         uuid: ""
@@ -104,10 +103,26 @@ export default {
     }
   },
   created() {
+    this.getQuote();
     this.getCode();
     this.getCookie();
   },
   methods: {
+    getQuote() {
+      const quotes = [
+        "感谢你的付出，让快仓变得更好",
+        "每一份努力，都值得被记录",
+        "智造未来，快人一步",
+        "你的每一分耕耘，都在点亮未来",
+        "高效协同，成就非凡",
+        "新的一天，遇见更好的自己",
+        "保持热爱，奔赴山海",
+        "因为有你，我们走得更远",
+        "致敬每一位奋斗者",
+        "卓越源于你的坚持与专注"
+      ];
+      this.currentQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    },
     getCode() {
       getCodeImg().then(res => {
         this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
@@ -165,16 +180,66 @@ export default {
   background-size: cover;
 }
 .title {
+  margin: 0px auto 15px auto;
+  text-align: center;
+  color: #3875F6;
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.login-quote {
   margin: 0px auto 30px auto;
   text-align: center;
-  color: #707070;
+  color: #555; // Slightly darker for legibility
+  font-size: 14px;
+  font-weight: 500; // Slightly bolder
+  letter-spacing: 1px;
+  font-style: italic; // Add style
+  opacity: 0.8;
+  transition: all 0.5s;
+  
+  &:hover {
+      opacity: 1;
+      transform: scale(1.02);
+      color: #3875F6; // Brand color on hover
+  }
 }
 
 .login-form {
-  border-radius: 6px;
-  background: #ffffff;
-  width: 400px;
-  padding: 25px 25px 5px 25px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85); // Semi-transparent white
+  backdrop-filter: blur(12px); // Glass blur effect
+  -webkit-backdrop-filter: blur(12px);
+  width: 420px;
+  padding: 30px 40px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); // Soft deep shadow
+  border: 1px solid rgba(255, 255, 255, 0.18); // Subtle border
+  
+  transition: transform 0.3s ease;
+  &:hover {
+      transform: translateY(-2px); // Subtle float on hover
+  }
+  .el-button--primary {
+      background: linear-gradient(90deg, #3875F6 0%, #2563EB 100%);
+      border: none;
+      height: 40px;
+      font-size: 16px;
+      letter-spacing: 4px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(56, 117, 246, 0.3);
+      transition: all 0.3s;
+
+      &:hover {
+          background: linear-gradient(90deg, #2563EB 0%, #1D4ED8 100%);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(56, 117, 246, 0.4);
+      }
+      
+      &:active {
+          transform: translateY(1px);
+      }
+  }
+
   .el-input {
     height: 38px;
     input {
@@ -201,18 +266,7 @@ export default {
     vertical-align: middle;
   }
 }
-.el-login-footer {
-  height: 40px;
-  line-height: 40px;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  color: #fff;
-  font-family: Arial;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
+
 .login-code-img {
   height: 38px;
 }
