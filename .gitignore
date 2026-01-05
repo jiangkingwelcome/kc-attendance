@@ -27,6 +27,11 @@ Thumbs.db
 .env.local
 .env.*.local
 
+# Spring Boot 配置文件（包含数据库密码等敏感信息）
+**/application-druid.yml
+**/application-dingtalk.yml
+**/application.yml
+
 # Redis 和其他本地数据
 dump.rdb
 *.db

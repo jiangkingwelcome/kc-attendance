@@ -100,6 +100,11 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="异常天数" align="center" prop="anomalyDays" width="100">
+        <template slot-scope="scope">
+          {{ calculateAnomalyDays(scope.row) }}
+        </template>
+      </el-table-column>
       <el-table-column label="入职日期" align="center" prop="hiredDate" />
       <el-table-column label="离职日期" align="center" prop="lastWorkDay" />
 
@@ -252,6 +257,15 @@ export default {
         default:
           return 'info';
       }
+    },
+
+    /** 计算异常天数 */
+    calculateAnomalyDays(row) {
+      const ywcounts = parseFloat(row.ywcounts) || 0;
+      const lateworkUndertime = parseFloat(row.lateworkUndertime) || 0;
+      const earlyworkUndertime = parseFloat(row.earlyworkUndertime) || 0;
+      const total = ywcounts + lateworkUndertime + earlyworkUndertime;
+      return total.toFixed(1);
     }
   }
 };

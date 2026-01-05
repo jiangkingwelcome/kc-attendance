@@ -127,7 +127,7 @@ public class DtEmployeeWorkServiceImpl implements IDtEmployeeWorkService {
     }
 
     /**
-     * 计算异常类型
+     * 计算异常类型 - 基于平均工时和异常天数的二维判断
      * @param work 员工工作统计数据
      * @return 异常类型：无异常、轻度异常、中度异常、重度异常
      */
@@ -139,66 +139,44 @@ public class DtEmployeeWorkServiceImpl implements IDtEmployeeWorkService {
             double earlyworkUndertime = parseDouble(work.getEarlyworkUndertime());  // 准时&工时不足
             double anomalyDays = ywcounts + lateworkUndertime + earlyworkUndertime;
 
+            // 设置异常天数（保留1位小数）
+            work.setAnomalyDays(String.format("%.1f", anomalyDays));
+
             // 平均工时
             double avgDuration = parseDouble(work.getAvgduration());
 
-            // 根据异常天数判断异常等级
-            String dayAnomalyLevel = getAnomalyLevelByDays(anomalyDays);
-
-            // 根据平均工时判断异常等级
-            String durationAnomalyLevel = getAnomalyLevelByDuration(avgDuration);
-
-            // 返回较严重的异常等级
-            return getMaxAnomalyLevel(dayAnomalyLevel, durationAnomalyLevel);
+            // 二维判断逻辑：先按平均工时分区间，再根据异常天数判断
+            if (avgDuration >= 10) {
+                // 平均工时 >= 10
+                if (anomalyDays == 0) {
+                    return "无异常";
+                } else if (anomalyDays > 0 && anomalyDays <= 5) {
+                    return "轻度异常";
+                } else {  // anomalyDays > 5
+                    return "轻度异常";
+                }
+            } else if (avgDuration >= 9.5) {
+                // 平均工时 >= 9.5 且 < 10
+                if (anomalyDays == 0) {
+                    return "轻度异常";
+                } else if (anomalyDays > 0 && anomalyDays <= 5) {
+                    return "轻度异常";
+                } else {  // anomalyDays > 5
+                    return "中度异常";
+                }
+            } else if (avgDuration >= 9) {
+                // 平均工时 >= 9 且 < 9.5
+                // 所有情况都是中度异常
+                return "中度异常";
+            } else {
+                // 平均工时 < 9
+                // 所有情况都是重度异常
+                return "重度异常";
+            }
         } catch (Exception e) {
+            work.setAnomalyDays("0.0");
             return "无异常";
         }
-    }
-
-    /**
-     * 根据异常天数判断异常等级
-     */
-    private String getAnomalyLevelByDays(double days) {
-        if (days == 0) {
-            return "无异常";
-        } else if (days > 0 && days <= 5) {
-            return "轻度异常";
-        } else if (days > 5 && days < 10) {
-            return "中度异常";
-        } else {  // days >= 10
-            return "重度异常";
-        }
-    }
-
-    /**
-     * 根据平均工时判断异常等级
-     */
-    private String getAnomalyLevelByDuration(double duration) {
-        if (duration >= 10) {
-            return "无异常";
-        } else if (duration >= 9.5 && duration < 10) {
-            return "轻度异常";
-        } else if (duration >= 9 && duration < 9.5) {
-            return "中度异常";
-        } else {  // duration < 9
-            return "重度异常";
-        }
-    }
-
-    /**
-     * 获取两个异常等级中较严重的一个
-     */
-    private String getMaxAnomalyLevel(String level1, String level2) {
-        Map<String, Integer> levelMap = new HashMap<>();
-        levelMap.put("无异常", 0);
-        levelMap.put("轻度异常", 1);
-        levelMap.put("中度异常", 2);
-        levelMap.put("重度异常", 3);
-
-        int weight1 = levelMap.getOrDefault(level1, 0);
-        int weight2 = levelMap.getOrDefault(level2, 0);
-
-        return weight1 >= weight2 ? level1 : level2;
     }
 
     /**

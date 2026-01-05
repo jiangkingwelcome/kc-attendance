@@ -134,5 +134,9 @@ public class DtEmployeeWork extends BaseEntity
     @Excel(name = "异常类型")
     private String anomalyType;
 
+    /** 异常天数 */
+    @Excel(name = "异常天数")
+    private String anomalyDays;
+
     private String employeeId;
 }
