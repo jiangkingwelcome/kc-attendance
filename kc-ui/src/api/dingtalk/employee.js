@@ -50,3 +50,11 @@ export function deptTreeSelect() {
     method: 'get'
   })
 }
+
+// 查询本月新入职人数
+export function getThisMonthNewHireCount() {
+  return request({
+    url: '/dingtalk/employee/thisMonthNewHireCount',
+    method: 'get'
+  })
+}

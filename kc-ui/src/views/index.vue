@@ -37,12 +37,12 @@
       </el-col>
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel">
-          <div class="card-panel-icon-wrapper icon-post">
-            <svg-icon icon-class="server" class-name="card-panel-icon" />
+          <div class="card-panel-icon-wrapper icon-leave">
+            <svg-icon icon-class="exit-fullscreen" class-name="card-panel-icon" />
           </div>
           <div class="card-panel-description">
-            <div class="card-panel-text">系统账号</div>
-            <count-to :start-val="0" :end-val="systemAccountCount" :duration="2000" class="card-panel-num" />
+            <div class="card-panel-text">今日请假人数</div>
+            <count-to :start-val="0" :end-val="todayLeaveCount" :duration="2000" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -110,7 +110,8 @@ import CountTo from 'vue-count-to'
 import echarts from 'echarts'
 import { listUser } from '@/api/system/user'
 import { listAttendance } from '@/api/dingtalk/attendance'
-import { listEmployee } from '@/api/dingtalk/employee'
+import { listEmployee, getThisMonthNewHireCount } from '@/api/dingtalk/employee'
+import { getTodayLeaveCount } from '@/api/dingtalk/leave'
 
 export default {
   name: 'Index',
@@ -123,7 +124,7 @@ export default {
       greeting: '',
       activeEmployeeCount: 0,
       attendanceCount: 0,
-      systemAccountCount: 0,
+      todayLeaveCount: 0,
       newHireCount: 0,
       quickActions: [
         { name: '员工管理', icon: 'el-icon-user', bg: '#E0F2FE' },
@@ -153,29 +154,17 @@ export default {
        
        // 2. Fetch Attendance Records
        listAttendance({ pageNum: 1, pageSize: 1 }).then(response => {
-           this.attendanceCount = response.total; 
+           this.attendanceCount = response.total;
        });
-       
-       // 3. Fetch System Accounts (The 1000+ users)
-       listUser().then(response => {
-           this.systemAccountCount = response.total;
+
+       // 3. Fetch Today Leave Count
+       getTodayLeaveCount().then(response => {
+           this.todayLeaveCount = response.data;
        });
-       
-       // 4. Fetch New Hires (From Employee List)
-       const now = new Date();
-       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-       const beginTime = startOfMonth.toISOString().split('T')[0];
-       
-       const query = {
-           pageNum: 1,
-           pageSize: 10000,
-           params: {
-               beginTime: beginTime
-           }
-       };
-       
-       listEmployee(query).then(response => {
-           this.newHireCount = response.total;
+
+       // 4. Fetch This Month New Hire Count
+       getThisMonthNewHireCount().then(response => {
+           this.newHireCount = response.data;
        });
     },
     updateGreeting() {
@@ -292,7 +281,7 @@ export default {
         }
         .icon-people { background: #40c9c6; }
         .icon-time { background: #36a3f7; }
-        .icon-post { background: #A855F7; }
+        .icon-leave { background: #f4516c; }
         .icon-hire { background: #10B981; }
       }
 
@@ -312,7 +301,7 @@ export default {
       
       .icon-people { color: #40c9c6; }
       .icon-time { color: #36a3f7; }
-      .icon-post { color: #A855F7; }
+      .icon-leave { color: #f4516c; }
       .icon-hire { color: #10B981; }
 
       .card-panel-description {
