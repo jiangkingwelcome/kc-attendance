@@ -1,6 +1,7 @@
 package com.kc.dingtalk.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import com.kc.common.core.domain.dao.AttendanceAnalyzeDao;
 import com.kc.common.core.domain.entity.DtAttendanceAnalyze;
@@ -79,5 +80,20 @@ public interface DtAttendanceAnalyzeMapper
      */
     void deleteByBatchNoRange(@Param("batchNoStart") String batchNoStart,@Param("batchNoEnd") String batchNoEnd);
 
+    /**
+     * 统计指定日期的考勤异常数量
+     *
+     * @param batchNo 日期批次号 (格式: yyyyMMdd)
+     * @return 异常数量（status != 0）
+     */
+    int countAbnormalByDate(@Param("batchNo") String batchNo);
+
+    /**
+     * 统计指定日期的异常明细（包括缺卡、其他异常等）
+     *
+     * @param batchNo 日期批次号（格式：yyyyMMdd）
+     * @return 异常明细统计
+     */
+    Map<String, Object> countAbnormalDetailsByDate(@Param("batchNo") String batchNo);
 
 }

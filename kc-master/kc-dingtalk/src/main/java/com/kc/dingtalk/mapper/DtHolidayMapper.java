@@ -69,4 +69,12 @@ public interface DtHolidayMapper
      * @return 结果
      */
     int batchInsert(List<DtHoliday> holidays);
+
+    /**
+     * 根据日期查询节假日信息
+     *
+     * @param curDay 日期（格式：yyyyMMdd）
+     * @return 节假日信息
+     */
+    DtHoliday selectDtHolidayByCurDay(String curDay);
 }

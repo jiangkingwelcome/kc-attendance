@@ -86,6 +86,20 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- Abnormal Stats Chart -->
+    <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <el-card class="chart-card">
+          <div slot="header" class="clearfix">
+            <span>近七日考勤异常趋势</span>
+            <el-tag size="small" type="danger" style="margin-left: 10px;">异常包含：缺卡、迟到、早退</el-tag>
+            <el-button style="float: right; padding: 3px 0" type="text" class="text-blue" @click="$router.push('/dingtalk/attendanceAnalyze')">查看详情</el-button>
+          </div>
+          <div id="chartAbnormal" style="width:100%; height:350px;"></div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -111,13 +125,18 @@ export default {
         dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         counts: [0, 0, 0, 0, 0, 0, 0]
       },
+      abnormalChartData: {
+        dates: [],
+        counts: [],
+        fullData: [] // 保存完整的数据，包括dayType、hasAttendanceData等
+      },
       quickActions: [
-        { name: '员工管理', icon: 'el-icon-user', bg: '#E0F2FE', path: '/dingtalk/employee' },
-        { name: '考勤补卡', icon: 'el-icon-time', bg: '#DCFCE7', path: '/dingtalk/attendance' },
-        { name: '请假审批', icon: 'el-icon-document-checked', bg: '#FEF3C7', path: '/dingtalk/employeeWork' },
-        { name: '考勤报表', icon: 'el-icon-data-line', bg: '#FEE2E2', path: '/dingtalk/attendanceAnalyze' },
-        { name: '排班管理', icon: 'el-icon-date', bg: '#F3E8FF', path: '/system/config' },
-        { name: '系统设置', icon: 'el-icon-setting', bg: '#E5E7EB', path: '/system/config' }
+        { name: '员工设置', icon: 'el-icon-user', bg: '#E0F2FE', path: '/dingtalk/employee' },
+        { name: '考勤汇总', icon: 'el-icon-data-line', bg: '#FEE2E2', path: '/dingtalk/attendanceAnalyze' },
+        { name: '员工统计', icon: 'el-icon-s-data', bg: '#FEF3C7', path: '/dingtalk/employeeWork' },
+        { name: '参数设置', icon: 'el-icon-setting', bg: '#F3E8FF', path: '/system/config' },
+        { name: '用户管理', icon: 'el-icon-user-solid', bg: '#DCFCE7', path: '/system/user' },
+        { name: '角色管理', icon: 'el-icon-s-custom', bg: '#E5E7EB', path: '/system/role' }
       ]
     }
   },
@@ -148,12 +167,21 @@ export default {
            this.chartData.counts = response.data.last7DaysAttendance.map(item => item.count || 0);
          }
 
+         // 处理近七日考勤异常数据
+         if (response.data.last7DaysAbnormal && response.data.last7DaysAbnormal.length > 0) {
+           this.abnormalChartData.fullData = response.data.last7DaysAbnormal; // 保存完整数据
+           this.abnormalChartData.dates = response.data.last7DaysAbnormal.map(item => item.day || item.date);
+           this.abnormalChartData.counts = response.data.last7DaysAbnormal.map(item => item.abnormalCount || 0);
+         }
+
          // 初始化图表
          this.initChart();
+         this.initAbnormalChart();
        }).catch(error => {
          console.error('获取统计数据失败:', error);
          // 即使出错也初始化图表（使用默认数据）
          this.initChart();
+         this.initAbnormalChart();
        });
     },
     updateGreeting() {
@@ -174,7 +202,11 @@ export default {
       const chart = echarts.init(document.getElementById('chartLine'))
       const option = {
         tooltip: {
-          trigger: 'axis'
+          trigger: 'axis',
+          formatter: function(params) {
+            const data = params[0];
+            return `日期: ${data.axisValue}<br/>打卡次数: ${data.value} 次`;
+          }
         },
         grid: {
            left: '3%',
@@ -185,14 +217,19 @@ export default {
         xAxis: {
           type: 'category',
           data: this.chartData.dates,
+          name: '日期',
+          nameTextStyle: { color: '#6B7280', fontSize: 12 },
           axisLine: { lineStyle: { color: '#9CA3AF' } }
         },
         yAxis: {
           type: 'value',
+          name: '打卡次数',
+          nameTextStyle: { color: '#6B7280', fontSize: 12 },
           axisLine: { show: false },
           splitLine: { lineStyle: { type: 'dashed', color: '#E5E7EB' } }
         },
         series: [{
+          name: '考勤打卡',
           data: this.chartData.counts,
           type: 'line',
           smooth: true,
@@ -205,6 +242,130 @@ export default {
                   offset: 1,
                   color: 'rgba(56, 117, 246, 0)'
               }])
+          }
+        }]
+      }
+      chart.setOption(option)
+      window.addEventListener("resize", () => { chart.resize();});
+    },
+    initAbnormalChart() {
+      const chart = echarts.init(document.getElementById('chartAbnormal'))
+      const self = this; // 保存this引用
+      const option = {
+        tooltip: {
+          trigger: 'axis',
+          formatter: function(params) {
+            const dataIndex = params[0].dataIndex;
+            const data = params[0];
+            const fullDataItem = self.abnormalChartData.fullData[dataIndex] || {};
+
+            let tips = [];
+            tips.push(`日期: ${data.axisValue}`);
+
+            // 显示星期几
+            if (fullDataItem.weekDay) {
+              const weekDays = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+              tips.push(`星期: ${weekDays[parseInt(fullDataItem.weekDay)] || fullDataItem.weekDay}`);
+            }
+
+            // 显示节假日信息
+            if (fullDataItem.holiday && fullDataItem.holiday !== '无') {
+              tips.push(`节假日: ${fullDataItem.holiday}`);
+            }
+
+            tips.push(`异常数量: ${data.value} 人次`);
+
+            // 显示异常明细
+            if (data.value > 0) {
+              const missingPunch = fullDataItem.missingPunch || 0;
+              const lateOrEarly = fullDataItem.lateOrEarly || 0;
+
+              tips.push('<span style="color:#94a3b8;">━━━━━━━━━━━━━━━━</span>');
+              tips.push('<span style="font-weight:bold;">异常明细：</span>');
+              if (missingPunch > 0) {
+                tips.push(`　缺卡: ${missingPunch} 人次`);
+              }
+              if (lateOrEarly > 0) {
+                tips.push(`　迟到/早退: ${lateOrEarly} 人次`);
+              }
+            }
+
+            // 显示提示信息
+            if (fullDataItem.dayType === '2') {
+              tips.push('<span style="color:#f59e0b;">⚠ 该天为周末</span>');
+            }
+
+            if (fullDataItem.hasAttendanceData === false) {
+              tips.push('<span style="color:#ef4444;">⚠ 数据可能还未更新</span>');
+            }
+
+            return tips.join('<br/>');
+          }
+        },
+        grid: {
+           left: '3%',
+           right: '4%',
+           bottom: '3%',
+           containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: this.abnormalChartData.dates.length > 0 ? this.abnormalChartData.dates : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          name: '日期',
+          nameTextStyle: { color: '#6B7280', fontSize: 12 },
+          axisLine: { lineStyle: { color: '#9CA3AF' } }
+        },
+        yAxis: {
+          type: 'value',
+          name: '异常人次',
+          nameTextStyle: { color: '#6B7280', fontSize: 12 },
+          axisLine: { show: false },
+          splitLine: { lineStyle: { type: 'dashed', color: '#E5E7EB' } }
+        },
+        series: [{
+          name: '考勤异常',
+          data: this.abnormalChartData.counts.length > 0 ? this.abnormalChartData.counts : [0, 0, 0, 0, 0, 0, 0],
+          type: 'bar',
+          itemStyle: {
+            // 动态设置颜色：没有打卡数据的显示灰色，有数据的显示红色渐变
+            color: (params) => {
+              const fullDataItem = self.abnormalChartData.fullData[params.dataIndex] || {};
+              if (fullDataItem.hasAttendanceData === false && params.value > 0) {
+                // 没有打卡数据，显示橙色警告色
+                return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                  offset: 0,
+                  color: '#fbbf24'
+                }, {
+                  offset: 1,
+                  color: '#f59e0b'
+                }]);
+              } else {
+                // 有打卡数据，显示红色
+                return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                  offset: 0,
+                  color: '#f87171'
+                }, {
+                  offset: 1,
+                  color: '#ef4444'
+                }]);
+              }
+            },
+            borderRadius: [4, 4, 0, 0]
+          },
+          barWidth: '60%',
+          label: {
+            show: true,
+            position: 'top',
+            formatter: (params) => {
+              const fullDataItem = self.abnormalChartData.fullData[params.dataIndex] || {};
+              // 如果没有打卡数据且有异常，显示"未更新"
+              if (fullDataItem.hasAttendanceData === false && params.value > 0) {
+                return `${params.value}\n未更新`;
+              }
+              return params.value;
+            },
+            color: '#6B7280',
+            fontSize: 11
           }
         }]
       }

@@ -366,14 +366,35 @@
 
     <select id="selectLast7DaysAttendanceStats" resultType="java.util.HashMap">
         SELECT
-            DATE_FORMAT(user_check_time, '%Y-%m-%d') as date,
-            DATE_FORMAT(user_check_time, '%m-%d') as day,
-            COUNT(*) as count
+            DATE_FORMAT(date_series.date, '%Y-%m-%d') as date,
+            DATE_FORMAT(date_series.date, '%m/%d') as day,
+            IFNULL(attendance_count.count, 0) as count
+        FROM (
+            SELECT DATE_SUB(CURDATE(), INTERVAL 6 DAY) as date
+            UNION ALL SELECT DATE_SUB(CURDATE(), INTERVAL 5 DAY)
+            UNION ALL SELECT DATE_SUB(CURDATE(), INTERVAL 4 DAY)
+            UNION ALL SELECT DATE_SUB(CURDATE(), INTERVAL 3 DAY)
+            UNION ALL SELECT DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+            UNION ALL SELECT DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+            UNION ALL SELECT CURDATE()
+        ) as date_series
+        LEFT JOIN (
+            SELECT
+                DATE(user_check_time) as check_date,
+                COUNT(*) as count
+            FROM dt_attendance
+            WHERE del_flag = '0'
+            AND user_check_time >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+            AND user_check_time &lt; DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+            GROUP BY DATE(user_check_time)
+        ) as attendance_count ON date_series.date = attendance_count.check_date
+        ORDER BY date_series.date ASC
+    </select>
+
+    <select id="countAttendanceByBatchNo" resultType="int" parameterType="String">
+        SELECT COUNT(*)
         FROM dt_attendance
-        WHERE del_flag = '0'
-        AND user_check_time >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-        AND user_check_time &lt; DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-        GROUP BY DATE_FORMAT(user_check_time, '%Y-%m-%d')
-        ORDER BY date ASC
+        WHERE batch_no = #{batchNo}
+          AND del_flag = '0'
     </select>
 </mapper>

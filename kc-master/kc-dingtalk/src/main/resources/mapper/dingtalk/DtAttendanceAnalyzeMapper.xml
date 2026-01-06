@@ -298,4 +298,27 @@
         where batch_no <![CDATA[ >= ]]> #{batchNoStart}
           and batch_no <![CDATA[ <= ]]> #{batchNoEnd}
     </delete>
+
+    <select id="countAbnormalByDate" resultType="int" parameterType="String">
+        SELECT COUNT(*)
+        FROM dt_attendance_analyze a
+        LEFT JOIN dt_holiday h ON h.cur_day = a.batch_no AND h.del_flag = '0'
+        WHERE a.batch_no = #{batchNo}
+          AND a.del_flag = '0'
+          AND a.status != 0
+          AND (h.day_type IS NULL OR h.day_type != '2')
+    </select>
+
+    <select id="countAbnormalDetailsByDate" resultType="map" parameterType="String">
+        SELECT
+            SUM(CASE WHEN a.status = 1 AND a.work_time IS NULL AND a.off_work_time IS NULL THEN 1 ELSE 0 END) as missingPunch,
+            SUM(CASE WHEN a.status = 1 AND (a.work_time IS NOT NULL OR a.off_work_time IS NOT NULL) THEN 1 ELSE 0 END) as lateOrEarly,
+            COUNT(*) as totalAbnormal
+        FROM dt_attendance_analyze a
+        LEFT JOIN dt_holiday h ON h.cur_day = a.batch_no AND h.del_flag = '0'
+        WHERE a.batch_no = #{batchNo}
+          AND a.del_flag = '0'
+          AND a.status != 0
+          AND (h.day_type IS NULL OR h.day_type != '2')
+    </select>
 </mapper>

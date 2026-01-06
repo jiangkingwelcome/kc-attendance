@@ -117,4 +117,12 @@ public interface DtAttendanceMapper
      * @return 近七日考勤统计
      */
     List<Map<String, Object>> selectLast7DaysAttendanceStats();
+
+    /**
+     * 统计指定日期的打卡记录数量
+     *
+     * @param batchNo 日期批次号（格式：yyyyMMdd）
+     * @return 打卡记录数量
+     */
+    int countAttendanceByBatchNo(@Param("batchNo") String batchNo);
 }

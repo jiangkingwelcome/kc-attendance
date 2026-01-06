@@ -40,6 +40,7 @@ public class DtStatsController extends BaseController
         stats.put("todayLeaveCount", statsCacheService.getTodayLeaveCount());
         stats.put("newHireCount", statsCacheService.getThisMonthNewHireCount());
         stats.put("last7DaysAttendance", statsCacheService.getLast7DaysAttendanceStats());
+        stats.put("last7DaysAbnormal", statsCacheService.getLast7DaysAbnormalStats());
         return AjaxResult.success(stats);
     }
 

@@ -16,6 +16,7 @@ import com.kc.dingtalk.service.ISynDtDeptService;
 import com.kc.dingtalk.service.ISynDtEmployeeService;
 import com.kc.dingtalk.service.ISynMendcardOrderService;
 import com.kc.dingtalk.service.ISynLeaveService;
+import com.kc.dingtalk.service.IStatsCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,8 @@ public class KcTask {
     private IDtHolidayService holidayService;
     @Autowired
     private IDtTravelService travelService;
+    @Autowired
+    private IStatsCacheService statsCacheService;
     /**
      * @description: 钉钉部门同步
      * @return:
@@ -548,4 +551,25 @@ public class KcTask {
 
 
     };
+
+    /**
+     * 刷新首页统计数据缓存
+     * 每30分钟执行一次，减少数据库查询压力
+     *
+     * @author kc
+     * @date 2026-01-06
+     */
+    public void refreshStatsCache()
+    {
+        logger.info("开始刷新首页统计数据缓存...");
+        try
+        {
+            statsCacheService.refreshAllStats();
+            logger.info("首页统计数据缓存刷新成功");
+        }
+        catch (Exception e)
+        {
+            logger.error("刷新首页统计数据缓存失败", e);
+        }
+    }
 }

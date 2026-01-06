@@ -146,4 +146,9 @@
         update_time = sysdate(),
         del_flag = values(del_flag)
     </insert>
+
+    <select id="selectDtHolidayByCurDay" parameterType="String" resultMap="DtHolidayResult">
+        <include refid="selectDtHolidayVo"/>
+        where cur_day = #{curDay} and del_flag = '0'
+    </select>
 </mapper>

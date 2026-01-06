@@ -82,4 +82,17 @@ public interface IStatsCacheService
      * 刷新近七日考勤统计数据缓存
      */
     void refreshLast7DaysAttendanceStats();
+
+    /**
+     * 获取近七日考勤异常趋势数据
+     * 从Redis缓存中获取，如果不存在则查询并缓存
+     *
+     * @return 近七日异常数据 [{date: "2026-01-01", day: "01-01", abnormalCount: 15}, ...]
+     */
+    List<Map<String, Object>> getLast7DaysAbnormalStats();
+
+    /**
+     * 刷新近七日考勤异常趋势数据缓存
+     */
+    void refreshLast7DaysAbnormalStats();
 }
