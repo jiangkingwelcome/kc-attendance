@@ -7,7 +7,7 @@ function resolve(dir) {
 
 const CompressionPlugin = require('compression-webpack-plugin')
 
-const name = process.env.VUE_APP_TITLE || '考勤管理平台' // 网页标题
+const name = process.env.VUE_APP_TITLE || '快仓考勤管理平台' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 80 // 端口
 
@@ -43,7 +43,7 @@ module.exports = {
       },
       // Proxy for remote development (fixes CORS)
       '/stage-api': {
-        target: 'https://jiangking.v3cu.com:8081',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         pathRewrite: {
           '^/stage-api': ''
