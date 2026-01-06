@@ -76,28 +76,12 @@
             <span>快捷入口</span>
           </div>
           <div class="action-list">
-            <div class="action-item" v-for="item in quickActions" :key="item.name">
+            <div class="action-item" v-for="item in quickActions" :key="item.name" @click="handleQuickAction(item)">
               <div class="action-icon" :style="{background: item.bg}">
                 <i :class="item.icon"></i>
               </div>
               <span class="action-name">{{ item.name }}</span>
             </div>
-          </div>
-        </el-card>
-
-         <el-card class="action-card" style="margin-top:20px;">
-          <div slot="header">
-            <span>系统公告</span>
-          </div>
-          <div class="notice-list">
-             <div class="notice-item">
-               <span class="notice-tag">由通知</span>
-               <span class="notice-title">春节放假安排通知...</span>
-             </div>
-             <div class="notice-item">
-               <span class="notice-tag warning">重要</span>
-               <span class="notice-title">考勤系统升级维护...</span>
-             </div>
           </div>
         </el-card>
       </el-col>
@@ -108,10 +92,7 @@
 <script>
 import CountTo from 'vue-count-to'
 import echarts from 'echarts'
-import { listUser } from '@/api/system/user'
-import { listAttendance } from '@/api/dingtalk/attendance'
-import { listEmployee, getThisMonthNewHireCount } from '@/api/dingtalk/employee'
-import { getTodayLeaveCount } from '@/api/dingtalk/leave'
+import request from '@/utils/request'
 
 export default {
   name: 'Index',
@@ -126,45 +107,53 @@ export default {
       attendanceCount: 0,
       todayLeaveCount: 0,
       newHireCount: 0,
+      chartData: {
+        dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        counts: [0, 0, 0, 0, 0, 0, 0]
+      },
       quickActions: [
-        { name: '员工管理', icon: 'el-icon-user', bg: '#E0F2FE' },
-        { name: '考勤补卡', icon: 'el-icon-time', bg: '#DCFCE7' },
-        { name: '请假审批', icon: 'el-icon-document-checked', bg: '#FEF3C7' },
-        { name: '考勤报表', icon: 'el-icon-data-line', bg: '#FEE2E2' },
-        { name: '排班管理', icon: 'el-icon-date', bg: '#F3E8FF' },
-        { name: '系统设置', icon: 'el-icon-setting', bg: '#E5E7EB' }
+        { name: '员工管理', icon: 'el-icon-user', bg: '#E0F2FE', path: '/dingtalk/employee' },
+        { name: '考勤补卡', icon: 'el-icon-time', bg: '#DCFCE7', path: '/dingtalk/attendance' },
+        { name: '请假审批', icon: 'el-icon-document-checked', bg: '#FEF3C7', path: '/dingtalk/employeeWork' },
+        { name: '考勤报表', icon: 'el-icon-data-line', bg: '#FEE2E2', path: '/dingtalk/attendanceAnalyze' },
+        { name: '排班管理', icon: 'el-icon-date', bg: '#F3E8FF', path: '/system/config' },
+        { name: '系统设置', icon: 'el-icon-setting', bg: '#E5E7EB', path: '/system/config' }
       ]
     }
   },
   mounted() {
     this.updateGreeting();
-    this.initChart();
     this.getStats();
   },
   methods: {
+    handleQuickAction(item) {
+      if (item.path) {
+        this.$router.push(item.path);
+      }
+    },
     getStats() {
-       // 1. Fetch Active Employees (DingTalk Source)
-       // Filter client-side by 'lastWorkDay' (Resignation Date)
-       listEmployee({ pageNum: 1, pageSize: 10000 }).then(response => {
-           const allEmployees = response.rows;
-           // Count employees who have NO resignation date
-           const activeEmployees = allEmployees.filter(emp => !emp.lastWorkDay);
-           this.activeEmployeeCount = activeEmployees.length;
-       });
-       
-       // 2. Fetch Attendance Records
-       listAttendance({ pageNum: 1, pageSize: 1 }).then(response => {
-           this.attendanceCount = response.total;
-       });
+       // 使用Redis缓存的统计数据API，一次性获取所有统计数据
+       request({
+         url: '/dingtalk/stats/dashboard',
+         method: 'get'
+       }).then(response => {
+         this.activeEmployeeCount = response.data.activeEmployeeCount;
+         this.attendanceCount = response.data.attendanceCount;
+         this.todayLeaveCount = response.data.todayLeaveCount;
+         this.newHireCount = response.data.newHireCount;
 
-       // 3. Fetch Today Leave Count
-       getTodayLeaveCount().then(response => {
-           this.todayLeaveCount = response.data;
-       });
+         // 处理近七日考勤数据
+         if (response.data.last7DaysAttendance && response.data.last7DaysAttendance.length > 0) {
+           this.chartData.dates = response.data.last7DaysAttendance.map(item => item.day || item.date);
+           this.chartData.counts = response.data.last7DaysAttendance.map(item => item.count || 0);
+         }
 
-       // 4. Fetch This Month New Hire Count
-       getThisMonthNewHireCount().then(response => {
-           this.newHireCount = response.data;
+         // 初始化图表
+         this.initChart();
+       }).catch(error => {
+         console.error('获取统计数据失败:', error);
+         // 即使出错也初始化图表（使用默认数据）
+         this.initChart();
        });
     },
     updateGreeting() {
@@ -195,7 +184,7 @@ export default {
         },
         xAxis: {
           type: 'category',
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: this.chartData.dates,
           axisLine: { lineStyle: { color: '#9CA3AF' } }
         },
         yAxis: {
@@ -204,7 +193,7 @@ export default {
           splitLine: { lineStyle: { type: 'dashed', color: '#E5E7EB' } }
         },
         series: [{
-          data: [1150, 1180, 1190, 1170, 1185, 200, 150],
+          data: this.chartData.counts,
           type: 'line',
           smooth: true,
           itemStyle: { color: '#3875F6' },
@@ -387,41 +376,6 @@ export default {
           .action-name {
               font-size: 12px;
               color: #6B7280;
-          }
-      }
-  }
-  
-  .notice-list {
-      .notice-item {
-          padding: 10px 0;
-          border-bottom: 1px solid #F3F4F6;
-          display: flex;
-          align-items: center;
-          
-          &:last-child {
-              border-bottom: none;
-          }
-          
-          .notice-tag {
-              padding: 2px 6px;
-              background: #EFF6FF;
-              color: #3875F6;
-              font-size: 12px;
-              border-radius: 4px;
-              margin-right: 10px;
-              
-              &.warning {
-                  background: #FEF2F2;
-                  color: #EF4444;
-              }
-          }
-          
-          .notice-title {
-              font-size: 14px;
-              color: #374151;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
           }
       }
   }

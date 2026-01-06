@@ -359,4 +359,21 @@
         </foreach>
         on duplicate key update place=values(place),update_by=values(update_by),update_time=values(update_time)
     </insert>
+
+    <select id="countAttendanceRecords" resultType="long">
+        select count(*) from dt_attendance where del_flag = '0'
+    </select>
+
+    <select id="selectLast7DaysAttendanceStats" resultType="java.util.HashMap">
+        SELECT
+            DATE_FORMAT(user_check_time, '%Y-%m-%d') as date,
+            DATE_FORMAT(user_check_time, '%m-%d') as day,
+            COUNT(*) as count
+        FROM dt_attendance
+        WHERE del_flag = '0'
+        AND user_check_time >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        AND user_check_time &lt; DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        GROUP BY DATE_FORMAT(user_check_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
 </mapper>

@@ -1,6 +1,7 @@
 package com.kc.dingtalk.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import com.kc.common.core.domain.dao.AttendanceDao;
 import com.kc.common.core.domain.dao.GetListByParamsResults;
@@ -101,4 +102,19 @@ public interface DtAttendanceMapper
      * @return 结果
      */
     int batchInsertDtAttendance(List<DtAttendance> dtAttendances);
+
+    /**
+     * 统计考勤记录总数
+     *
+     * @return 考勤记录总数
+     */
+    long countAttendanceRecords();
+
+    /**
+     * 获取近七日考勤统计数据
+     * 返回格式：日期和对应的考勤记录数
+     *
+     * @return 近七日考勤统计
+     */
+    List<Map<String, Object>> selectLast7DaysAttendanceStats();
 }
