@@ -231,8 +231,8 @@ export default {
         code: [{ required: true, trigger: "change", message: "请输入验证码" }]
       },
       loading: false,
-      // 验证码开关 - 临时启用以便测试
-      captchaEnabled: true,
+      // 验证码开关
+      captchaEnabled: false,
       // 注册开关
       register: false,
       redirect: undefined
@@ -270,9 +270,7 @@ export default {
     getCode() {
       this.refreshingCaptcha = true;
       getCodeImg().then(res => {
-        // 临时强制启用验证码以便测试
-        // this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
-        this.captchaEnabled = true; // 强制启用
+        this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
 
         if (res.img) {
           this.codeUrl = "data:image/gif;base64," + res.img;
