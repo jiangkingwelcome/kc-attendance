@@ -169,12 +169,19 @@ export default {
       .avatar-wrapper {
         margin-top: 5px;
         position: relative;
+        display: flex;
+        align-items: center;
 
         .user-avatar {
           cursor: pointer;
           width: 40px;
           height: 40px;
           border-radius: 10px;
+          object-fit: cover;
+          object-position: center;
+          display: block;
+          overflow: hidden;
+          flex-shrink: 0;
         }
 
         .el-icon-caret-bottom {
