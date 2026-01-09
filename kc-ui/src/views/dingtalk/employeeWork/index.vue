@@ -171,6 +171,14 @@ export default {
     };
   },
   created() {
+    // 检查是否有日期参数传入
+    if (this.$route.query.date) {
+      const dateParam = this.$route.query.date;
+      console.log('接收到日期参数:', dateParam);
+      // 将日期参数设置到日期范围选择器中（开始和结束日期都是同一天）
+      this.daterangeBatchNo = [dateParam, dateParam];
+      console.log('设置日期范围:', this.daterangeBatchNo);
+    }
     this.getList();
     this.getDeptTree();
   },
@@ -183,11 +191,13 @@ export default {
       if (null != this.daterangeBatchNo && '' != this.daterangeBatchNo) {
           this.queryParams.params["beginBatchNo"] = this.daterangeBatchNo[0];
           this.queryParams.params["endBatchNo"] = this.daterangeBatchNo[1];
+          console.log('查询参数 - 开始日期:', this.daterangeBatchNo[0], '结束日期:', this.daterangeBatchNo[1]);
       }
 
       if (null != this.queryParams.deptId && '' != this.queryParams.deptId) {
         this.queryParams.params["deptId"] = this.queryParams.deptId;
       }
+      console.log('最终查询参数:', this.queryParams);
       //如果报错了给空
       listEmployeeWork(this.queryParams).then(response => {
         this.employeeWorkList = response.rows;

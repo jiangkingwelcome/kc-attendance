@@ -13,18 +13,7 @@
 
     <!-- Key Metrics Cards -->
     <el-row :gutter="20" class="panel-group">
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-        <div class="card-panel">
-          <div class="card-panel-icon-wrapper icon-people">
-            <svg-icon icon-class="peoples" class-name="card-panel-icon" />
-          </div>
-          <div class="card-panel-description">
-            <div class="card-panel-text">在岗职工</div>
-            <count-to :start-val="0" :end-val="activeEmployeeCount" :duration="2000" class="card-panel-num" />
-          </div>
-        </div>
-      </el-col>
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+      <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
         <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-time">
             <svg-icon icon-class="time-range" class-name="card-panel-icon" />
@@ -35,7 +24,7 @@
           </div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+      <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
         <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-leave">
             <svg-icon icon-class="exit-fullscreen" class-name="card-panel-icon" />
@@ -46,7 +35,7 @@
           </div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+      <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
         <div class="card-panel">
           <div class="card-panel-icon-wrapper icon-hire">
             <svg-icon icon-class="user" class-name="card-panel-icon" />
@@ -299,6 +288,8 @@ export default {
               tips.push('<span style="color:#ef4444;">⚠ 数据可能还未更新</span>');
             }
 
+            tips.push('<span style="color:#3875F6;">💡 点击柱状图查看详情</span>');
+
             return tips.join('<br/>');
           }
         },
@@ -370,7 +361,36 @@ export default {
         }]
       }
       chart.setOption(option)
+
+      // 添加点击事件
+      chart.on('click', function(params) {
+        if (params.componentType === 'series') {
+          const dataIndex = params.dataIndex;
+          const fullDataItem = self.abnormalChartData.fullData[dataIndex] || {};
+          const clickedDate = params.name; // 获取点击的日期，格式如 "01-04"
+
+          // 将日期格式转换为 yyyyMMdd 格式
+          const dateStr = self.convertDateFormat(clickedDate);
+
+          // 跳转到员工工作统计页面，并传递日期参数
+          self.$router.push({
+            path: '/dingtalk/employeeWork',
+            query: {
+              date: dateStr
+            }
+          });
+        }
+      });
+
       window.addEventListener("resize", () => { chart.resize();});
+    },
+
+    // 将日期格式从 "MM-DD" 转换为 "yyyyMMdd"
+    convertDateFormat(dateStr) {
+      // dateStr 格式如 "01-04"
+      const currentYear = new Date().getFullYear();
+      const [month, day] = dateStr.split('-');
+      return `${currentYear}${month}${day}`;
     }
   }
 }
